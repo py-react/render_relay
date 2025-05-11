@@ -1,0 +1,1 @@
+DEFAULT_SOCK_PATH = "/tmp/gingerjs_unix.sock"

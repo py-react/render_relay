@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    {% for key, value in meta_info.items() %}
+        {% if key == 'title' %}
+          <title>{{value}}</title>
+        {% elif key == "icon" %}
+          <link rel="icon" type="image/x-icon" href="{{value}}">
+        {% else %}
+            <meta name="{{ key }}" content="{{ value }}">
+        {% endif %}
+    {% endfor %}
+    {% if "title" not in meta_info %}
+      <title>GingerJs</title>
+    {% endif %}
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" media="(prefers-color-scheme: dark)" content="dark" />
+    <meta name="theme-color" media="(prefers-color-scheme: light)" content="light" />
+  </head>
+  <body>
+    {% autoescape false %}
+    {% block content %}{% endblock %}
+    {% if not_found %}
+    <div style="height:100vh;" class="flex items-center justify-center bg-white dark:bg-gray-950 px-4 md:px-6">
+        <div class="max-w-md text-center space-y-4">
+            <h1 style="font-size: 8rem;line-height: 1;color: rgb(17 24 39);" class="font-bold text-gray-900 dark:text-gray-50">404</h1>
+            <p style="font-size: 1.125rem;color: rgb(107 114 128)" class="dark:text-gray-400">
+                Oops, the page you are looking for could not be found.
+            </p>
+        </div>
+    </div>
+    {% endif %}
+    {% if not error %}
+    <script class="serverScript">
+        window.fastApi_react_app_props = {{react_props | tojson}};
+    </script>
+    {% endif %}
+    {% endautoescape %}
+  </body>
+</html>

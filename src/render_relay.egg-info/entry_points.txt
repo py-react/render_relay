@@ -1,0 +1,2 @@
+[console_scripts]
+render_relay = render_relay.cli:cli
