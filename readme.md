@@ -162,7 +162,7 @@ Path Example : `src/app/index.py`
 from fastapi import Request
 import requests
 
-def index(request:Request):
+async def index(request:Request):
     api_url = f'https://dummyjson.com/products/'  # Replace this with the URL of the API you want to fetch data from
     # ----or---
     # productId = request.args.get("productId")
@@ -201,7 +201,7 @@ Path Example : `src/app/index.py`
 ```python
 from fastapi import Request
 
-def layout(request:Request):
+async def layout(request:Request):
     return {"serverData":"some_data"}
 ```
 
@@ -244,7 +244,7 @@ Path Example : `src/app/api/product/index.py`
 ```python
 from fastapi import Request
 
-def GET(request:Request):
+async def GET(request:Request):
     data = {}
     for key,value in request.args.items():
         data[key] = value
@@ -320,7 +320,7 @@ Overide config
 // create a "ginger_conf.cjs" at root of the project and add the below in the file
 
 module.exports = {
-    webpack:{}
+    vite:{}
 }
 ```
 

@@ -75,9 +75,11 @@ class RouteProcessor:
         
         # Handle middleware
         if hasattr(module, 'middleware'):
-            view_middleware_class = Create_Middleware_Class(module.middleware, f"{url_rule}/", "view")
+            
+            view_middleware_class = Create_Middleware_Class(module.middleware, f"{url_rule if url_rule == "/" else f"{url_rule}/"}", "view")
             self.app.add_middleware(view_middleware_class)
-            self.routes_tree.append(f"Middleware attached on route '{url_rule}/' attached it using middleware.py in {dirpath}")
+            self.routes_tree.append(f"Middleware attached on route '{url_rule if url_rule == "/" else f"{url_rule}/"}' attached it using middleware.py in {dirpath}")
+        
         
         # Handle view function
         if hasattr(module, 'index'):
@@ -109,9 +111,9 @@ class RouteProcessor:
         
         # Handle middleware
         if hasattr(module, 'middleware'):
-            self.api_middleware_class = Create_Middleware_Class(module.middleware, f"/api{url_rule}/", "api")
+            self.api_middleware_class = Create_Middleware_Class(module.middleware, f"/api{url_rule if url_rule == "/" else f"{url_rule}/"}", "api")
             self.app.add_middleware(self.api_middleware_class)
-            self.routes_tree.append(f"Middleware attached on api '/api{url_rule}/' attached it using middleware.py in {dirpath}")
+            self.routes_tree.append(f"Middleware attached on api '/api{url_rule if url_rule == "/" else f"{url_rule}/"}' attached it using middleware.py in {dirpath}")
         
         # Add HTTP method routes
         methods = ["GET", "POST", "PUT", "DELETE"]

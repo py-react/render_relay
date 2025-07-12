@@ -17,7 +17,7 @@ function getArgValue(key, defaultValue = null) {
 
 const debug = getArgValue("debug", "False")==="True"?true:false;
 const debug_log = (msg) => {
-  if (true) {
+  if (debug) {
     return console.log(`${process.pid} Node Bridge: ${msg}`);
   }
   return ;
