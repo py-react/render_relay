@@ -12,7 +12,7 @@ import logging
 from watchdog.observers import Observer
 
 from render_relay.utils.user_input import main
-
+from render_relay.utils.constant import DEFAULT_LOCKFILE,DEFAULT_SOCK_PATH
 logger = logging.getLogger(__name__)
 observer = Observer()
 
@@ -112,10 +112,10 @@ def runserver(mode):
         
         settings["DEBUG"] = False
         # Define the socket path
-        socket_path = "/tmp/gingerjs_unix.sock"
+        socket_path = DEFAULT_SOCK_PATH
         # Start the Node.js server as a subprocess
         node_process_path = os.path.join(get_current_dir(__file__),"core", "bridge", "unix_sock.js")
-        LOCKFILE = "/tmp/my_subprocess.lock"
+        LOCKFILE = DEFAULT_LOCKFILE
         try:
             os.remove(LOCKFILE)
             os.remove(socket_path)

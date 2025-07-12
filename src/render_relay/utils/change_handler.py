@@ -7,7 +7,8 @@ from render_relay.core.create_app.cra import create_react_app
 from render_relay.utils import load_settings
 from render_relay.utils.app_boiler_plate import settings
 from render_relay.utils.common import get_current_dir, get_pids
-
+from render_relay.utils.get_logger import get_logger
+from render_relay.utils.constant import DEFAULT_LOCKFILE,DEFAULT_SOCK_PATH
 settings = load_settings()
 
 def run_uvicorn():
@@ -22,10 +23,10 @@ def run_uvicorn():
         print(f"No existing uvicorn process found on port {port}")
     
     create_react_app()
-    socket_path = "/tmp/gingerjs_unix.sock"
+    socket_path = DEFAULT_SOCK_PATH
     # Start the Node.js server as a subprocess
     node_process_path = os.path.join(get_current_dir(__file__),"..","core", "bridge", "unix_sock.js")
-    LOCKFILE = "/tmp/my_subprocess.lock"
+    LOCKFILE = DEFAULT_LOCKFILE
     try:
         os.remove(LOCKFILE)
         os.remove(socket_path)
@@ -43,6 +44,7 @@ def run_uvicorn():
 
 class ChangeHandler(FileSystemEventHandler):
     def __init__(self,my_env):
+        self._logger = get_logger("ChangeHandler")
         self.settings = settings
         self.my_env = my_env
         for key, value in self.settings.items():
@@ -52,8 +54,7 @@ class ChangeHandler(FileSystemEventHandler):
         self.start()
     
     def debug_log(self, *args, **kwargs):
-        if self.my_env["DEBUG"]:
-            print(*args, **kwargs)
+        self._logger.debug(*args, **kwargs)
 
     def on_any_event(self, event):
         # Ignore events in __pycache__ directories
@@ -71,7 +72,7 @@ class ChangeHandler(FileSystemEventHandler):
         for process in self.all_processes:
             process.terminate()
 
-        print("Starting new command thread...")
+        self._logger.info("Starting new command thread...")
         process = multiprocessing.Process(target=run_uvicorn)
         process.start()
         self.all_processes.append(process)

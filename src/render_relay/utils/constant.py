@@ -2,7 +2,7 @@ import logging
 
 DEFAULT_SOCK_PATH = "/tmp/gingerjs_unix.sock"
 
-
+DEFAULT_LOCKFILE = "/tmp/my_subprocess.lock"
 
 level_map = {
     "DEBUG": logging.DEBUG,
