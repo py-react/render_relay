@@ -1,4 +1,3 @@
-from fastapi import Request
 from functools import wraps
 
 def api(module):

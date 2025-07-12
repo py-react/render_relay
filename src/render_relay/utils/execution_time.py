@@ -1,10 +1,10 @@
-import logging
 import time
 import functools
-
-logger = logging.getLogger(__name__)
+from render_relay.utils.get_logger import get_logger
+from render_relay.utils.constant import level_map
 
 def excecution_time(func):
+    logger = get_logger("ExecutionTime")
     @functools.wraps(func)
     def wrapper(*args, **kwargs):
         start_time = time.time()

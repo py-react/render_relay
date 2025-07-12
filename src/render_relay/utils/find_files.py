@@ -1,8 +1,8 @@
 import os
-from typing import Any
+from typing import Any,Optional
 
 # Function to recursively search for JSX files and create a list of absolute paths
-def find_jsx_files(directory_path:str,settings:dict[str, Any], jsx_files_list:list[str]=None):
+def find_jsx_files(directory_path:str,settings:dict[str, Any], jsx_files_list:Optional[list[str]]=None):
     
     if jsx_files_list is None:
         jsx_files_list = []

@@ -2,7 +2,6 @@ import re
 from collections import defaultdict
 import os
 import importlib.util
-from datetime import datetime
 from render_relay.utils import load_settings
 from .api import api
 from .view import view
@@ -14,17 +13,15 @@ from fastapi.routing import APIRoute
 from fastapi.responses import HTMLResponse,JSONResponse
 from fastapi import FastAPI
 from starlette.exceptions import HTTPException as StarletteHTTPException
-from render_relay.utils import get_logger
-
+from render_relay.utils.constant import level_map
+import logging
 
 class RouteProcessor:
-    def __init__(self,app:FastAPI,root_folder,route_type,*args, **kwargs):
-        self._logger = get_logger("RouteProcessor")
+    def __init__(self,app:FastAPI,root_folder:str,route_type:str,logger:logging.Logger):
+        self._logger = logger
         self.app = app
         self.root_folder = root_folder
         self.route_type = route_type
-        self.args = args
-        self.kwargs = kwargs
         self.settings = load_settings()
         self.app.add_exception_handler(404,not_found(self.app))
         self.app.add_exception_handler(StarletteHTTPException,exception(self.app))
@@ -64,18 +61,9 @@ class RouteProcessor:
                                 self.process_route_file(dirpath, filename)
         self.debug_mode()
 
-    def debug_log(self, *a, debug_level=None, **kwa):
-        if self.debug:
-            msg = " ".join(str(x) for x in a)
-            level_map = {
-                "DEBUG": logging.DEBUG,
-                "INFO": logging.INFO,
-                "WARNING": logging.WARNING,
-                "ERROR": logging.ERROR,
-                "CRITICAL": logging.CRITICAL,
-            }
-            if debug_level and debug_level in level_map and self.debug_level == debug_level:
-                self._logger.log(level_map[debug_level], f"{msg}", **kwa)
+    def debug_log(self, *a, **kwa):
+        msg = " ".join(str(x) for x in a)
+        self._logger.debug(f"{msg}", **kwa)
 
     def process_view_route(self,module, url_rule, dirpath, relative_path):
         """Process view route logic"""
@@ -113,7 +101,7 @@ class RouteProcessor:
             )
             self.app.router.routes.append(route)
         else:
-            self.debug_log(f"No 'view_func' found in {relative_path}",debug_level="WARNING")  # debug_log is accessible in original scope
+            self._logger.warn(f"No 'view_func' found in {relative_path}")
 
     def process_api_route(self,module, url_rule, dirpath):
         """Process API route logic"""
@@ -240,10 +228,10 @@ class RouteProcessor:
                     if route in processed_routes:
                         return
                     processed_routes.add(route)
-                    self.debug_log(f"{indent}{COLOR_ROUTE}{route}{COLOR_RESET}",debug_level="DEBUG")
+                    self._logger.debug(f"{indent}{COLOR_ROUTE}{route}{COLOR_RESET}")
                     indent += "    "
                     for action in routes[route]:
-                        self.debug_log(f"{indent}|-- {color_action(action)}",debug_level="DEBUG")
+                        self._logger.debug(f"{indent}|-- {color_action(action)}")
                     # Find direct children: one more segment than parent
                     for subroute in sorted(routes.keys()):
                         if subroute != route and subroute.startswith(route + '/') and subroute not in processed_routes:
@@ -268,9 +256,9 @@ class RouteProcessor:
                     print_branch(root)
 
             # Print the tree structure
-            self.debug_log("",debug_level="DEBUG")
-            self.debug_log("R̲o̲u̲t̲e: ",self.route_type,debug_level="DEBUG")
-            self.debug_log("",debug_level="DEBUG")
+            self._logger.debug("")
+            self._logger.debug(f"R̲o̲u̲t̲e: {self.route_type}")
+            self._logger.debug("")
             print_tree(routes,self.route_type) 
 
 
