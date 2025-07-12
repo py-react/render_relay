@@ -29,7 +29,7 @@ Now, you need to install GingerJS using `pip`. Open your terminal or command pro
 
 
 ```shell
-pip install git+https://github.com/ginger-society/ginger-js.git
+pip install git+https://github.com/py-react/render_relay.git
 ```
 
 ### Create your app
