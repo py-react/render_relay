@@ -34,6 +34,7 @@ class App(FastAPI):
         self.setStaticPath()
         self.extend_app()
         self.add_url()
+        self.generate_openapi_schema()
 
     def generate_openapi_schema(self):
         output_file = "./public/static/openapi.json"
