@@ -62,21 +62,6 @@ class RouteProcessor:
                     else:
                         if "index.py" in filenames:
                             self.process_route_file(dirpath, "index.py")
-                        elif "index.py" not in filenames and ("index.tsx" in filenames or "layout.tsx" in filenames):
-                            # Handle static site generation without index.py
-                            relative_path = os.path.relpath(os.path.join(dirpath), self.root_folder)
-                            url_rule = '/' + os.path.dirname(relative_path).replace(os.sep, '/')
-                            url_rule = url_rule.replace('[', '{').replace(']', '}')
-                            if url_rule == '/.':
-                                url_rule = '/'
-                            route = APIRoute(
-                                path=url_rule,
-                                endpoint=view(None, self.app, True),
-                                methods=["GET"],
-                                response_class=HTMLResponse,
-                            )
-                            self.process_view_route(None,url_rule,dirpath,relative_path)
-                            self.routes_tree.append(f"Route '{url_rule}' attached it using default in {dirpath}")
                             
         self.debug_mode()
 
@@ -99,19 +84,6 @@ class RouteProcessor:
 
     def process_view_route(self,module, url_rule, dirpath, relative_path):
         """Process view route logic"""
-        if not module:
-            self.routes_tree.append(f"Route '{url_rule}' attached it using index.py in {dirpath}")
-            route = APIRoute(
-                path=url_rule,
-                name="",
-                endpoint=view(None, self.app,True),
-                methods=["GET"],
-                response_class=HTMLResponse,
-            )
-            self.app.router.routes.append(route)
-            self._logger.debug(f"No 'view_func' found in {relative_path} so adding default route")
-            return
-
         # Handle layout
         if hasattr(module, 'layout'):
             layout_middleware_class = Create_Layout_Middleware_Class(module.layout, f"{url_rule if url_rule == "/" else f"{url_rule}/"}")
