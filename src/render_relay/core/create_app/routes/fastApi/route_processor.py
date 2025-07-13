@@ -45,7 +45,7 @@ class RouteProcessor:
                     if filename == 'index.py':
                         self.process_route_file(dirpath, filename)
             elif self.route_type == "view":
-                if "/api/" not in dirpath and "/ws/" not in dirpath:
+                if "/api/" not in dirpath and "/app-sockets/" not in dirpath:
                     if self.settings.get("STATIC_SITE", False) and "index.py" not in filenames:
                         # Handle static site generation without index.py
                         relative_path = os.path.relpath(os.path.join(dirpath), self.root_folder)

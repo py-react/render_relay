@@ -54,7 +54,7 @@ class App(FastAPI):
     
     def add_url(self):
         # Generate Flask routes
-        add_url_rules(self,debug=self._settings.get("DEBUG",False))
+        add_url_rules(self)
     
     def setStaticPath(self):
         self.static_url_path='/static'
