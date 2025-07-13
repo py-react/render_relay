@@ -32,12 +32,13 @@ def run_uvicorn():
         os.remove(socket_path)
     except Exception as e:
         pass
+    subprocess.run(["pkill","-f","unix_sock.js"])
     node_process = subprocess.Popen(['node', node_process_path,f"debug={os.environ.get('DEBUG','False')}",f'cwd={os.getcwd()}',f"sock_path={socket_path}"])
     with open(LOCKFILE, "w") as f:
         f.write(str(node_process.pid))
     # Since we don't use subprocess, os.popen gives us a way to capture stdout and stderr.
     subprocess.run([
-        "uvicorn", "_gingerjs.main:app", "--reload",
+        "uvicorn", "_gingerjs.main:app",
         "--port", str(port),
         "--host", settings.get("HOST")
     ])
@@ -58,7 +59,7 @@ class ChangeHandler(FileSystemEventHandler):
 
     def on_any_event(self, event):
         # Ignore events in __pycache__ directories
-        if any(substring in event.src_path for substring in ["__pycache__","gingerJs_api_client","_gingerjs"])  or event.src_path.endswith(".py"):
+        if any(substring in event.src_path for substring in ["__pycache__","gingerJs_api_client","_gingerjs"])  or event.src_path.endswith(".pyc"):
             return
         if event.is_directory:
             return
