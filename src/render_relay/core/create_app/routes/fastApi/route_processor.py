@@ -11,7 +11,6 @@ from .not_found import not_found
 from .middleware import Create_Middleware_Class
 from .layout_view import Create_Layout_Middleware_Class
 from fastapi.routing import APIRoute, APIWebSocketRoute
-# from starlette.routing import WebSocketRoute
 from fastapi.responses import HTMLResponse,JSONResponse
 from fastapi import FastAPI
 from starlette.exceptions import HTTPException as StarletteHTTPException
@@ -37,13 +36,11 @@ class RouteProcessor:
             # Now your main logic becomes much cleaner:
             if self.route_type == "api":
                 # Process all directories for API routes
-                for filename in filenames:
-                    if filename == 'index.py':
-                        self.process_route_file(dirpath, filename)
+                if "index.py" in filenames:
+                    self.process_route_file(dirpath, "index.py")
             elif self.route_type == "ws":
-                for filename in filenames:
-                    if filename == 'index.py':
-                        self.process_route_file(dirpath, filename)
+                if "index.py" in filenames:
+                    self.process_route_file(dirpath, "index.py")
             elif self.route_type == "view":
                 if "/api/" not in dirpath and "/app-sockets/" not in dirpath:
                     if self.settings.get("STATIC_SITE", False) and "index.py" not in filenames:
@@ -61,10 +58,26 @@ class RouteProcessor:
                             response_class=HTMLResponse,
                         )
                         self.app.router.routes.append(route)
+                        self.routes_tree.append(f"Route '{url_rule}' attached it using default in {dirpath}")
                     else:
-                        for filename in filenames:
-                            if filename == 'index.py':
-                                self.process_route_file(dirpath, filename)
+                        if "index.py" in filenames:
+                            self.process_route_file(dirpath, "index.py")
+                        elif "index.py" not in filenames and ("index.tsx" in filenames or "layout.tsx" in filenames):
+                            # Handle static site generation without index.py
+                            relative_path = os.path.relpath(os.path.join(dirpath), self.root_folder)
+                            url_rule = '/' + os.path.dirname(relative_path).replace(os.sep, '/')
+                            url_rule = url_rule.replace('[', '{').replace(']', '}')
+                            if url_rule == '/.':
+                                url_rule = '/'
+                            route = APIRoute(
+                                path=url_rule,
+                                endpoint=view(None, self.app, True),
+                                methods=["GET"],
+                                response_class=HTMLResponse,
+                            )
+                            self.process_view_route(None,url_rule,dirpath,relative_path)
+                            self.routes_tree.append(f"Route '{url_rule}' attached it using default in {dirpath}")
+                            
         self.debug_mode()
 
     def debug_log(self, *a, **kwa):
@@ -86,6 +99,19 @@ class RouteProcessor:
 
     def process_view_route(self,module, url_rule, dirpath, relative_path):
         """Process view route logic"""
+        if not module:
+            self.routes_tree.append(f"Route '{url_rule}' attached it using index.py in {dirpath}")
+            route = APIRoute(
+                path=url_rule,
+                name="",
+                endpoint=view(None, self.app,True),
+                methods=["GET"],
+                response_class=HTMLResponse,
+            )
+            self.app.router.routes.append(route)
+            self._logger.debug(f"No 'view_func' found in {relative_path} so adding default route")
+            return
+
         # Handle layout
         if hasattr(module, 'layout'):
             layout_middleware_class = Create_Layout_Middleware_Class(module.layout, f"{url_rule if url_rule == "/" else f"{url_rule}/"}")
@@ -107,16 +133,6 @@ class RouteProcessor:
                 path=url_rule,
                 name="",
                 endpoint=view(module, self.app),
-                methods=["GET"],
-                response_class=HTMLResponse,
-            )
-            self.app.router.routes.append(route)
-        elif self.settings.get("STATIC_SITE", False):  # settings is accessible in original scope
-            self.routes_tree.append(f"Route '{url_rule}' attached it using index.py in {dirpath}")
-            route = APIRoute(
-                path=url_rule,
-                name="",
-                endpoint=view(module, self.app, True),
                 methods=["GET"],
                 response_class=HTMLResponse,
             )

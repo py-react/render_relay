@@ -31,8 +31,8 @@ class App(FastAPI):
         self.template_folder= path.sep.join(["_gingerjs","build","templates"])
         self.root_path= path.join(getcwd(),"src","app")
         self.setTemplateEngine()
-        self.setStaticPath()
         self.extend_app()
+        self.setStaticPath()
         self.add_url()
 
     def generate_openapi_schema(self):
