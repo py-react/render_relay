@@ -5,11 +5,13 @@ import importlib.util
 from render_relay.utils import load_settings
 from .api import api
 from .view import view
+from .ws import ws
 from .exception_view import exception
 from .not_found import not_found
 from .middleware import Create_Middleware_Class
 from .layout_view import Create_Layout_Middleware_Class
-from fastapi.routing import APIRoute
+from fastapi.routing import APIRoute, APIWebSocketRoute
+# from starlette.routing import WebSocketRoute
 from fastapi.responses import HTMLResponse,JSONResponse
 from fastapi import FastAPI
 from starlette.exceptions import HTTPException as StarletteHTTPException
@@ -38,8 +40,12 @@ class RouteProcessor:
                 for filename in filenames:
                     if filename == 'index.py':
                         self.process_route_file(dirpath, filename)
+            elif self.route_type == "ws":
+                for filename in filenames:
+                    if filename == 'index.py':
+                        self.process_route_file(dirpath, filename)
             elif self.route_type == "view":
-                if "/api/" not in dirpath:
+                if "/api/" not in dirpath and "/ws/" not in dirpath:
                     if self.settings.get("STATIC_SITE", False) and "index.py" not in filenames:
                         # Handle static site generation without index.py
                         relative_path = os.path.relpath(os.path.join(dirpath), self.root_folder)
@@ -65,11 +71,24 @@ class RouteProcessor:
         msg = " ".join(str(x) for x in a)
         self._logger.debug(f"{msg}", **kwa)
 
+    def process_ws_route(self,module, url_rule, dirpath):
+        """Process ws route logic"""
+
+        if hasattr(module, 'index'):
+            # Define your dynamic WebSocket route
+            route = APIWebSocketRoute(
+                path=f"/ws{url_rule}",
+                endpoint=ws(module.index),
+                name=""
+            )
+            self.app.router.routes.append(route)
+            self.routes_tree.append(f"WS route '/ws{url_rule if url_rule == "/" else f"{url_rule}/"}' attached it using index.py in {dirpath}")
+
     def process_view_route(self,module, url_rule, dirpath, relative_path):
         """Process view route logic"""
         # Handle layout
         if hasattr(module, 'layout'):
-            layout_middleware_class = Create_Layout_Middleware_Class(module.layout, f"{url_rule}/")
+            layout_middleware_class = Create_Layout_Middleware_Class(module.layout, f"{url_rule if url_rule == "/" else f"{url_rule}/"}")
             self.app.add_middleware(layout_middleware_class)
             self.routes_tree.append(f"layout attached on route '{url_rule}' attached it using layout.py in {dirpath}")
         
@@ -116,7 +135,7 @@ class RouteProcessor:
             self.routes_tree.append(f"Middleware attached on api '/api{url_rule if url_rule == "/" else f"{url_rule}/"}' attached it using middleware.py in {dirpath}")
         
         # Add HTTP method routes
-        methods = ["GET", "POST", "PUT", "DELETE"]
+        methods = ["GET", "POST", "PUT", "DELETE","PATCH","OPTIONS","HEAD"]
         for method in methods:
             if hasattr(module, method):
                 route = APIRoute(
@@ -149,6 +168,8 @@ class RouteProcessor:
         
         if self.route_type == "api":
             self.process_api_route(module, url_rule, dirpath)
+        elif self.route_type == "ws":
+            self.process_ws_route(module, url_rule, dirpath)
         else:  # route_type == "view"
             self.process_view_route(module, url_rule, dirpath, relative_path)
 
@@ -164,6 +185,8 @@ class RouteProcessor:
             no_api_middleware_pattern = re.compile(r"No 'middleware' found for api '(.*?)' attach it by adding middleware.py in")
             api_middleware_pattern = re.compile(r"Middleware attached on api '(.*?)' attached it using middleware.py")
 
+            ws_pattern = re.compile(r"WS route '(.*?)' attached it using index.py in")
+
             # Parse the log entries to extract routes and their actions
             routes = defaultdict(list)
 
@@ -176,6 +199,8 @@ class RouteProcessor:
                 api_match = api_pattern.search(line)
                 no_api_middleware_match = no_api_middleware_pattern.search(line)
                 api_middleware_match = api_middleware_pattern.search(line)
+
+                ws_match = ws_pattern.search(line)
                 
                 if route_match:
                     route, action = route_match.groups()
@@ -198,7 +223,10 @@ class RouteProcessor:
                 elif api_middleware_match:
                     route = api_middleware_match.group(1)
                     routes[route].append("middleware.py")
-
+                elif ws_match:
+                    route = ws_match.group(1)
+                    routes[route].append("WS Endpoint")
+                
             # Function to print the tree structure with color for terminal
             def print_tree(routes, route_type):
                 # ANSI color codes
@@ -209,7 +237,7 @@ class RouteProcessor:
                 COLOR_LAYOUT = "\033[0;35m"     # Magenta
                 COLOR_API = "\033[1;34m"        # Bold blue
                 COLOR_NO_MIDDLEWARE = "\033[0;31m" # Red
-
+                COLOR_WS = "\033[1;32m"        # Bold green
                 def color_action(action):
                     if "No 'middleware'" in action:
                         return f"{COLOR_NO_MIDDLEWARE}{action}{COLOR_RESET}"
@@ -219,6 +247,8 @@ class RouteProcessor:
                         return f"{COLOR_LAYOUT}{action}{COLOR_RESET}"
                     elif "Api Endpoint" in action:
                         return f"{COLOR_API}{action}{COLOR_RESET}"
+                    elif "WS Endpoint" in action:
+                        return f"{COLOR_WS}{action}{COLOR_RESET}"
                     elif "Page" in action:
                         return f"{COLOR_ACTION}{action}{COLOR_RESET}"
                     else:
