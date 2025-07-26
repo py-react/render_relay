@@ -51,7 +51,7 @@ class App(FastAPI):
             if app_module_present:
                 app_module_present.extend_app(self)
         except Exception as e:
-            print(e)
+            print(f"Error loading extend_app module: {e}")
     
     def add_url(self):
         # Generate Flask routes

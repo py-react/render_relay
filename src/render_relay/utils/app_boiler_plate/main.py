@@ -1,4 +1,5 @@
 import os
+from os import path
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
 import subprocess
@@ -9,6 +10,19 @@ from render_relay.utils import load_settings
 from render_relay.utils.constant import DEFAULT_LOCKFILE
 from render_relay.utils.get_logger import get_logger
 
+import importlib.util
+
+
+def load_module(module_name,module_path):
+    try:
+        module_name = module_name
+        spec = importlib.util.spec_from_file_location(module_name, module_path)
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+        return module
+    except Exception as e:
+        raise e
+
 LOCKFILE = DEFAULT_LOCKFILE
 
 @asynccontextmanager
@@ -16,6 +30,15 @@ async def lifespan(app: FastAPI):
     startLogger = get_logger("AppLifespan: Start")
     settings = load_settings()
     subprocess.run(["yarn" if settings.get("package_manager","npm") == "yarn" else "npm","run","generate-client"])
+    working_dir = settings["CWD"]
+    app_name = settings["NAME"]
+    try:
+        startup_module = load_module("startup",path.join(working_dir,app_name,f"main.py"))
+        if startup_module:
+            await startup_module.startup(app)
+    except Exception as e:
+        startLogger.error(f"Attaching startup module failed: {e}")
+        pass
     startLogger.info("Client Generated")
     yield
     stopLogger = get_logger("AppLifespan: Cleanup")
@@ -44,6 +67,13 @@ async def lifespan(app: FastAPI):
             # Always clean up the lockfile
             if os.path.exists(LOCKFILE):
                 os.remove(LOCKFILE)
+    try:
+        shutdown_module = load_module("shutdown",path.join(working_dir,app_name,f"main.py"))
+        if shutdown_module:
+            await shutdown_module.shutdown(app)
+    except Exception as e:
+        stopLogger.error(f"Attaching shutdown module failed: {e}")
+        pass
     # Clean up and release the resources
     pass
 
