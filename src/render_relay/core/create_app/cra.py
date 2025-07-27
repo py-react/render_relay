@@ -44,4 +44,7 @@ def create_react_app():
     os.makedirs(os.path.join(get_base(),"public","static"),exist_ok=True)
     
     if not debug:
-        subprocess.run(["rm", "-rf", os.path.sep.join([".","","_gingerjs","__build__"])], check=True, cwd=cwd)
+        # Use built-in Python functions instead of subprocess
+        __build_path = os.path.join(cwd, "_gingerjs", "__build__")
+        if os.path.exists(__build_path):
+            shutil.rmtree(__build_path)

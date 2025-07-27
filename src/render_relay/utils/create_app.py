@@ -212,10 +212,13 @@ class CreateReactAppUtil:
         if self.cwd is None:
             raise ValueError("Current working directory not provided")
         try:
-            # Remove the './build' directory
+            # Remove the entire _gingerjs directory to ensure clean build
             build_path = os.path.join(self.cwd,"_gingerjs")
             if os.path.exists(build_path):
                 shutil.rmtree(build_path)
+            
+            # Create fresh _gingerjs directory
+            os.makedirs(build_path, exist_ok=True)
 
             # Remove the './public/static/js/app.js' file
             app_js_path = os.path.join(self.cwd, 'public', 'static', 'js', 'app.js')
