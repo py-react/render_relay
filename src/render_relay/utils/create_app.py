@@ -17,7 +17,7 @@ class CreateReactAppUtil:
         self.settings = settings
         self.cwd = os.getcwd()
         self.env = my_env
-        self.file_ext = "tsx"
+        self.file_ext = "tsx" if settings.get("TYPESCRIPT", False) else "jsx"
         self.app_file = f"app.{self.file_ext}"
         self.DEFAULT_LAYOUT = "DefaultLayout_"
         self.PAGE_NOT_FOUND = "GenericNotFound"
@@ -70,12 +70,37 @@ class CreateReactAppUtil:
         # Replace the matching segments with : followed by the captured text
         return pattern.sub(r":\1", path)
     
-    def generate_component_name(self,component_path:str):
-        return self.replace_wildcards_in_component_name(
-            "_".join(
-                part.capitalize() for part in component_path.split("/")[3:]
-            ).replace("-", "_").replace(f".{self.file_ext}","")
-        )
+    def generate_component_name(self, component_path: str):
+        # Extract the relative path from 'src/app' if it exists
+        if "src" + os.sep + "app" in component_path:
+            name_part = component_path.split("src" + os.sep + "app")[-1]
+        elif "src" in component_path:
+            name_part = component_path.split("src")[-1]
+        else:
+            name_part = os.path.basename(component_path)
+            
+        # Remove any known extensions
+        for ext in [".tsx", ".jsx", ".ts", ".js"]:
+            if name_part.lower().endswith(ext):
+                name_part = name_part[:-len(ext)]
+                break
+        
+        # Replace wildcards [slug] with _slug_ first to preserve them
+        name_part = self.replace_wildcards_in_component_name(name_part)
+        
+        # Replace all non-alphanumeric with underscores
+        name_part = re.sub(r'[^a-zA-Z0-9]', '_', name_part)
+        
+        # Clean up and capitalize parts to ensure valid JS variable name
+        parts = [p.capitalize() for p in name_part.split("_") if p]
+        name = "_".join(parts)
+        
+        if not name:
+            name = "Component"
+        if name[0].isdigit():
+            name = "C" + name
+            
+        return name
     
     def get_imports(self,obj:dict):
         imports = []
@@ -169,7 +194,7 @@ class CreateReactAppUtil:
         to_return  = [
             "import React, { useState, useEffect,createContext, startTransition, useMemo, Suspense } from 'react';",
             "import { BrowserRouter as Router, Route, Routes, Outlet, useLocation } from 'react-router-dom';",
-            "import { Redirect, matchPath } from 'react-router';",
+            "import { matchPath } from 'react-router';",
             self.get_imports(node_data),
             self.get_react_components("DefaultLoader.jsx"),
             self.get_react_components("PropsProvider.jsx"),
@@ -211,31 +236,33 @@ class CreateReactAppUtil:
     def initial_steps(self,):
         if self.cwd is None:
             raise ValueError("Current working directory not provided")
-        try:
-            # Remove the entire _gingerjs directory to ensure clean build
-            build_path = os.path.join(self.cwd,"_gingerjs")
-            if os.path.exists(build_path):
-                shutil.rmtree(build_path)
-            
-            # Create fresh _gingerjs directory
-            os.makedirs(build_path, exist_ok=True)
+        
+        ginger_path = os.path.join(self.cwd, "_gingerjs")
+        build_path = os.path.join(ginger_path, "__build__")
+        
+        # Ensure _gingerjs exists
+        os.makedirs(ginger_path, exist_ok=True)
+        
+        # Only clean the __build__ directory for React segments
+        if os.path.exists(build_path):
+            shutil.rmtree(build_path)
+        os.makedirs(build_path, exist_ok=True)
 
-            # Remove the './public/static/js/app.js' file
-            app_js_path = os.path.join(self.cwd, 'public', 'static', 'js', 'app.js')
-            if os.path.exists(app_js_path):
-                os.remove(app_js_path)
-        except subprocess.CalledProcessError:
-            pass
+        # Handle static files
+        app_js_path = os.path.join(self.cwd, 'public', 'static', 'js', 'app.js')
+        if os.path.exists(app_js_path):
+            os.remove(app_js_path)
 
         react_components_path = os.path.join(get_current_dir(__file__),"react_components")
-        build_path = os.path.join(self.cwd, "_gingerjs", "__build__")
 
-        os.makedirs(os.path.join(self.cwd,"_gingerjs"), exist_ok=True)
-        copy_file_if_not_exists(os.path.join(get_current_dir(__file__),"app_boiler_plate","main.py"),os.path.join(get_base(),"_gingerjs","main.py"),shutil.copy) # fastApi app
-        with open(os.path.join(self.cwd,"_gingerjs","__init__.py"), 'w') as file:
-            pass  # 'pass' is used here to do nothing, effectively creating an empty file
-
-        os.makedirs(build_path, exist_ok=True)
+        # Ensure main.py and __init__.py exist but don't overwrite if they are fine
+        # Actually copying main.py is fine as it's just the entry point
+        copy_file_if_not_exists(os.path.join(get_current_dir(__file__),"app_boiler_plate","main.py"),os.path.join(self.cwd,"_gingerjs","main.py"),shutil.copy)
+        
+        init_file = os.path.join(ginger_path, "__init__.py")
+        if not os.path.exists(init_file):
+            with open(init_file, 'w') as file:
+                pass
 
         copy_file_if_not_exists(os.path.join(react_components_path, "BrowserRouterWrapper.jsx"), os.path.join(
             build_path, "BrowserRouterWrapper.jsx"))
@@ -259,5 +286,6 @@ class CreateReactAppUtil:
         if self.debug:
             copy_file_if_not_exists(os.path.join(react_components_path,"Error.jsx"),os.path.join(build_path, "Error.jsx"))
         
-        delete_pycache(self.cwd,[])
+        if not self.debug:
+            delete_pycache(self.cwd,[])
         subprocess.run(["yarn" if self.settings.get("PACKAGE_MANAGER") == "yarn" else "npx", "vite","build", "--config",os.path.join(get_current_dir(__file__),"..","core","create_app","vite.node.config.js")], cwd=get_base(), check=True, env=self.env)
