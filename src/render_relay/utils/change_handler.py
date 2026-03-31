@@ -132,7 +132,7 @@ class DevChangeHandler(FileSystemEventHandler):
     * Python edit       → restart uvicorn process
     """
 
-    def __init__(self, my_env, uvicorn_runner=None, node_runner=None):
+    def __init__(self, my_env, uvicorn_runner=None, node_runner=None, server_runner=None):
         self._logger = get_logger("DevChangeHandler")
         self.settings = settings
         self.my_env = my_env
@@ -143,6 +143,7 @@ class DevChangeHandler(FileSystemEventHandler):
         self._lock = threading.Lock()
         self._uvicorn_runner = uvicorn_runner # Callback to restart uvicorn
         self._node_runner = node_runner # Callback to restart Node bridge
+        self._server_runner = server_runner # Callback for full server restart (atomic)
 
     # ---- watchdog callbacks ------------------------------------------------
 
@@ -229,10 +230,13 @@ class DevChangeHandler(FileSystemEventHandler):
     def _on_python_change(self):
         """Python file edited — restart the server."""
         self._logger.info("[HMR] Python change — restarting server...")
-        if self._uvicorn_runner:
-            self._uvicorn_runner()
-        if self._node_runner:
-            self._node_runner()
+        if self._server_runner:
+            self._server_runner()
+        else:
+            if self._uvicorn_runner:
+                self._uvicorn_runner()
+            if self._node_runner:
+                self._node_runner()
 
     def _on_css_change(self):
         """CSS file edited — quick rebuild then hot-swap."""

@@ -35,6 +35,8 @@ class App(FastAPI):
             self.setup_hmr()
 
     def generate_openapi_schema(self):
+        if environ.get("RENDER_RELAY_SKIP_OPENAPI_GEN", "False") == "True":
+            return
         from render_relay.utils.build_manager import BuildManager
         bm = BuildManager(app_instance=self)
         bm.generate_openapi()

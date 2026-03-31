@@ -1,6 +1,8 @@
 import os
-from fastapi.responses import  Response
+import inspect
+from fastapi.responses import Response
 from functools import wraps
+from starlette.concurrency import run_in_threadpool
 
 from render_relay.core.ssr import SSROperation
 
@@ -22,7 +24,10 @@ def view(module,app,static_route=False):
                 layout_props = request.state.prop_data
                 delattr(request.state,"prop_data")
             
-            props = await func(*args, **kwargs)
+            if inspect.iscoroutinefunction(func):
+                props = await func(*args, **kwargs)
+            else:
+                props = await run_in_threadpool(func, *args, **kwargs)
             if props == None:
                 props = {}
 
@@ -49,7 +54,10 @@ def view(module,app,static_route=False):
                 "title": "GingerJs"
             }
             if hasattr(module, 'meta_data'):
-                meta = await module.meta_data()
+                if inspect.iscoroutinefunction(module.meta_data):
+                    meta = await module.meta_data()
+                else:
+                    meta = await run_in_threadpool(module.meta_data)
 
             return app.TemplateResponse(request=request,name="content.html",context={"react_context":toRender,"react_props":props,"meta_info":meta},status_code=200)
     

@@ -72,7 +72,9 @@ class BuildManager:
                 self._logger.error(f"App entry point not found at {main_path}")
                 return False
 
+            os.environ["RENDER_RELAY_SKIP_OPENAPI_GEN"] = "True"
             module = load_module("gingerjs_main", main_path)
+            os.environ["RENDER_RELAY_SKIP_OPENAPI_GEN"] = "False"
             if hasattr(module, 'app'):
                 self.app_instance = module.app
                 self._logger.info("App instance loaded successfully from _gingerjs.main:app")

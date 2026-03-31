@@ -217,63 +217,74 @@ class RouteProcessor:
                 
             # Function to print the tree structure with color for terminal
             def print_tree(routes, route_type):
-                # ANSI color codes
-                COLOR_ROUTE = "\033[1;36m"      # Bold cyan
-                COLOR_ACTION = "\033[0;32m"     # Green
+                # ANSI colors
                 COLOR_RESET = "\033[0m"
-                COLOR_MIDDLEWARE = "\033[0;33m" # Yellow
-                COLOR_LAYOUT = "\033[0;35m"     # Magenta
-                COLOR_API = "\033[1;34m"        # Bold blue
-                COLOR_NO_MIDDLEWARE = "\033[0;31m" # Red
-                COLOR_WS = "\033[1;32m"        # Bold green
-                def color_action(action):
-                    if "No 'middleware'" in action:
-                        return f"{COLOR_NO_MIDDLEWARE}{action}{COLOR_RESET}"
-                    elif "Middleware attached" in action or "middleware.py" in action:
-                        return f"{COLOR_MIDDLEWARE}{action}{COLOR_RESET}"
-                    elif "Layout attached" in action or "Layout attached using layout.py" in action:
-                        return f"{COLOR_LAYOUT}{action}{COLOR_RESET}"
-                    elif "Api Endpoint" in action:
-                        return f"{COLOR_API}{action}{COLOR_RESET}"
+                COLOR_ROUTE = "\033[1;36m"
+                COLOR_API = "\033[1;34m"
+                COLOR_WS = "\033[1;32m"
+                COLOR_MIDDLEWARE = "\033[0;33m"
+                COLOR_LAYOUT = "\033[0;35m"
+                COLOR_PAGE = "\033[0;32m"
+                COLOR_OTHER = "\033[0;37m"
+                COLOR_NONE = "\033[0;31m"
+
+                def classify(action):
+                    if "Api Endpoint" in action:
+                        return f"{COLOR_API}API{COLOR_RESET}"
                     elif "WS Endpoint" in action:
-                        return f"{COLOR_WS}{action}{COLOR_RESET}"
+                        return f"{COLOR_WS}WebSocket{COLOR_RESET}"
+                    elif "Middleware" in action:
+                        return f"{COLOR_MIDDLEWARE}Middleware{COLOR_RESET}"
+                    elif "Layout" in action:
+                        return f"{COLOR_LAYOUT}Layout{COLOR_RESET}"
                     elif "Page" in action:
-                        return f"{COLOR_ACTION}{action}{COLOR_RESET}"
-                    else:
-                        return f"{COLOR_ACTION}{action}{COLOR_RESET}"
+                        return f"{COLOR_PAGE}Page{COLOR_RESET}"
+                    elif "No 'middleware'" in action:
+                        return f"{COLOR_NONE}None{COLOR_RESET}"
+                    return f"{COLOR_OTHER}Other{COLOR_RESET}"
 
-                def print_branch(route, indent="", processed_routes=None):
-                    if processed_routes is None:
-                        processed_routes = set()
-                    if route in processed_routes:
-                        return
-                    processed_routes.add(route)
-                    self._logger.debug(f"{indent}{COLOR_ROUTE}{route}{COLOR_RESET}")
-                    indent += "    "
-                    for action in routes[route]:
-                        self._logger.debug(f"{indent}|-- {color_action(action)}")
-                    # Find direct children: one more segment than parent
-                    for subroute in sorted(routes.keys()):
-                        if subroute != route and subroute.startswith(route + '/') and subroute not in processed_routes:
-                            # Only one more segment
-                            parent_segments = route.strip('/').split('/')
-                            child_segments = subroute.strip('/').split('/')
-                            if len(child_segments) == len(parent_segments) + 1:
-                                print_branch(subroute, indent, processed_routes)
+                # Flatten rows
+                rows = []
+                for route, actions in sorted(routes.items()):
+                    for action in actions:
+                        rows.append([
+                            f"{COLOR_ROUTE}{route}{COLOR_RESET}",
+                            classify(action),
+                            action
+                        ])
 
-                # Find root routes: not a child of any other route
-                all_routes = sorted(routes.keys())
-                root_routes = []
-                for route in all_routes:
-                    is_child = False
-                    for other_route in all_routes:
-                        if other_route != route and route.startswith(other_route + '/'):
-                            is_child = True
-                            break
-                    if not is_child:
-                        root_routes.append(route)
-                for root in sorted(root_routes):
-                    print_branch(root)
+                headers = ["Route", "Type", "Details"]
+
+                # Calculate column widths (strip ANSI for length)
+                import re
+                ansi_escape = re.compile(r'\x1b\[[0-9;]*m')
+
+                def visible_len(s):
+                    return len(ansi_escape.sub('', s))
+
+                col_widths = [
+                    max(visible_len(row[i]) for row in rows + [headers])
+                    for i in range(len(headers))
+                ]
+
+                def format_row(row):
+                    return "│ " + " │ ".join(
+                        f"{cell}{' ' * (col_widths[i] - visible_len(cell))}"
+                        for i, cell in enumerate(row)
+                    ) + " │"
+
+                def separator(left, mid, right):
+                    return left + mid.join("─" * (w + 2) for w in col_widths) + right
+
+                # Print table
+                print(separator("┌", "┬", "┐"))
+                print(format_row(headers))
+                print(separator("├", "┼", "┤"))
+
+                for row in rows:
+                    print(format_row(row))
+
+                print(separator("└", "┴", "┘"))
 
             # Print the tree structure
             self._logger.debug("")

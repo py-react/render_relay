@@ -26,7 +26,7 @@ class BridgeOperation:
     def test_connection(self):
         try:
             client = self.get_client()
-            self._logger.debug("Calling connect")
+            self._logger.debug(f"Calling connect {self.bridge_path}")
             client.connect(self.bridge_path)
             try:
                 data = self.send_and_receive(json.dumps({"type":"health_check","data":""}))

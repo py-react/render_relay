@@ -98,105 +98,160 @@ def runserver(mode):
             bm.pre_flight(debug=True)
             click.echo("Initial build complete.")
 
-            # 2. Start Node bridge for SSR
+            # 2. Process Manager for safe restarts
+            import threading
+
+            class DevProcessManager:
+                def __init__(self, uvicorn_cmd, node_cmd_args, env, cwd):
+                    self.uvicorn_cmd = uvicorn_cmd
+                    self.node_cmd_args = node_cmd_args
+                    self.env = env
+                    self.cwd = cwd
+                    self.uvicorn_process = None
+                    self.node_process = None
+                    self.is_restarting_uvicorn = False
+                    self.is_restarting_node = False
+                    self.lock = threading.Lock()
+                    self.should_exit = False
+
+                def start_node(self):
+                    with self.lock:
+                        self.is_restarting_node = True
+                        if self.node_process:
+                            try:
+                                self.node_process.terminate()
+                                self.node_process.wait(timeout=3)
+                            except Exception:
+                                self.node_process.kill()
+                        
+                        socket_path = DEFAULT_SOCK_PATH
+                        LOCKFILE = DEFAULT_LOCKFILE
+                        try:
+                            if os.path.exists(socket_path): os.remove(socket_path)
+                            if os.path.exists(LOCKFILE): os.remove(LOCKFILE)
+                        except Exception: pass
+
+                        self.node_process = subprocess.Popen(
+                            ['node'] + self.node_cmd_args,
+                            cwd=self.cwd
+                        )
+                        with open(LOCKFILE, "w") as f:
+                            f.write(str(self.node_process.pid))
+                        self.is_restarting_node = False
+                        return self.node_process
+
+                def start_uvicorn(self):
+                    with self.lock:
+                        self.is_restarting_uvicorn = True
+                        if self.uvicorn_process:
+                            try:
+                                self.uvicorn_process.terminate()
+                                self.uvicorn_process.wait(timeout=3)
+                            except Exception:
+                                self.uvicorn_process.kill()
+
+                        self.uvicorn_process = subprocess.Popen(
+                            self.uvicorn_cmd, 
+                            cwd=self.cwd, 
+                            env=self.env
+                        )
+                        self.is_restarting_uvicorn = False
+                        return self.uvicorn_process
+
+                def restart_uvicorn(self):
+                    click.echo("🔄 Restarting uvicorn...")
+                    self.start_uvicorn()
+                    click.echo(f"🔄 Uvicorn restarted (PID {self.uvicorn_process.pid})")
+
+                def restart_node(self):
+                    click.echo("🔄 Restarting Node bridge...")
+                    self.start_node()
+                    click.echo(f"🔄 Node bridge restarted (PID {self.node_process.pid})")
+
+                def restart_all(self):
+                    """Restarts both uvicorn and node atomically from the health check perspective."""
+                    with self.lock:
+                        self.is_restarting_uvicorn = True
+                        self.is_restarting_node = True
+                    
+                    # We call the start methods which handle their own locking and flag clearing
+                    self.restart_uvicorn()
+                    self.restart_node()
+
+                def is_healthy(self):
+                    with self.lock:
+                        if self.is_restarting_uvicorn or self.is_restarting_node:
+                            return True # If we're in the middle of a restart, it's "healthy" for now
+                        
+                        uv_dead = self.uvicorn_process and self.uvicorn_process.poll() is not None
+                        node_dead = self.node_process and self.node_process.poll() is not None
+                        
+                        if uv_dead or node_dead:
+                            if uv_dead: click.echo("❌ Uvicorn exited unexpectedly.")
+                            if node_dead: click.echo("❌ Node bridge exited unexpectedly.")
+                            return False
+                        return True
+
+                def stop_all(self):
+                    self.should_exit = True
+                    for proc, name in [(self.uvicorn_process, "uvicorn"), (self.node_process, "node bridge")]:
+                        if proc:
+                            try:
+                                proc.terminate()
+                                proc.wait(timeout=3)
+                                click.echo(f"  {name} stopped")
+                            except Exception:
+                                try: proc.kill()
+                                except Exception: pass
+
             node_process_path = os.path.join(get_current_dir(__file__), "core", "bridge", "unix_sock.js")
-            socket_path = DEFAULT_SOCK_PATH
-            LOCKFILE = DEFAULT_LOCKFILE
-
-            def start_node_bridge():
-                try:
-                    if os.path.exists(socket_path):
-                        os.remove(socket_path)
-                    if os.path.exists(LOCKFILE):
-                        os.remove(LOCKFILE)
-                except Exception:
-                    pass
-                
-                proc = subprocess.Popen(
-                    ['node', node_process_path, f"debug=True", f'cwd={os.getcwd()}', f"sock_path={socket_path}"]
-                )
-                with open(LOCKFILE, "w") as f:
-                    f.write(str(proc.pid))
-                return proc
-
-            node_process = start_node_bridge()
-            click.echo(f"Node bridge started (PID {node_process.pid})")
-
-            # 3. Start uvicorn (NO --reload — we handle it in DevChangeHandler)
+            node_args = [node_process_path, f"debug=True", f'cwd={os.getcwd()}', f"sock_path={DEFAULT_SOCK_PATH}"]
             uvicorn_cmd = [
                 "uvicorn", "_gingerjs.main:app",
                 "--port", settings.get("PORT", "8000"),
                 "--host", settings.get("HOST", "0.0.0.0"),
             ]
-            
-            uvicorn_process = subprocess.Popen(uvicorn_cmd, cwd=get_base(), env=my_env)
-            click.echo(f"Uvicorn started (PID {uvicorn_process.pid})")
+
+            manager = DevProcessManager(uvicorn_cmd, node_args, my_env, get_base())
+            manager.start_node()
+            click.echo(f"Node bridge started (PID {manager.node_process.pid})")
+            manager.start_uvicorn()
+            click.echo(f"Uvicorn started (PID {manager.uvicorn_process.pid})")
 
             # 4. Start DevChangeHandler for unified watching
             from render_relay.utils.change_handler import DevChangeHandler
-            
-            def restart_uvicorn():
-                nonlocal uvicorn_process
-                click.echo("🔄 Restarting uvicorn...")
-                try:
-                    uvicorn_process.terminate()
-                    uvicorn_process.wait(timeout=3)
-                except Exception:
-                    uvicorn_process.kill()
-                
-                uvicorn_process = subprocess.Popen(uvicorn_cmd, cwd=get_base(), env=my_env)
-                click.echo(f"🔄 Uvicorn restarted (PID {uvicorn_process.pid})")
-
-            def restart_node():
-                nonlocal node_process
-                click.echo("🔄 Restarting Node bridge...")
-                try:
-                    node_process.terminate()
-                    node_process.wait(timeout=3)
-                except Exception:
-                    node_process.kill()
-                
-                node_process = start_node_bridge()
-                click.echo(f"🔄 Node bridge restarted (PID {node_process.pid})")
-
-            event_handler = DevChangeHandler(my_env, uvicorn_runner=restart_uvicorn, node_runner=restart_node)
+            # Use manager.restart_all for Python changes to avoid race conditions
+            event_handler = DevChangeHandler(
+                my_env, 
+                uvicorn_runner=manager.restart_uvicorn, 
+                node_runner=manager.restart_node,
+                server_runner=manager.restart_all
+            )
             observer = Observer()
-            observer.schedule(event_handler, path=".", recursive=True) # Watch project root
+            observer.schedule(event_handler, path=".", recursive=True)
 
             try:
                 observer.start()
                 click.echo("✅ Dev server ready — watching for changes (HMR enabled)")
                 click.echo(f"   Open http://{settings.get('HOST', 'localhost')}:{settings.get('PORT', '8000')}")
 
-                while True:
+                while not manager.should_exit:
                     time.sleep(1)
-                    if uvicorn_process.poll() is not None or node_process.poll() is not None:
-                        # If either process exited unexpectedly, break
+                    if not manager.is_healthy():
                         break
             except KeyboardInterrupt:
                 click.echo("\nShutting down dev server...")
             finally:
                 observer.stop()
                 observer.join()
-                # Clean shutdown of subprocesses
-                for proc, name in [(uvicorn_process, "uvicorn"), (node_process, "node bridge")]:
-                    try:
-                        proc.terminate()
-                        proc.wait(timeout=3)
-                        click.echo(f"  {name} stopped")
-                    except Exception:
-                        try:
-                            proc.kill()
-                        except Exception:
-                            pass
+                manager.stop_all()
                 # Clean up lock/socket files
-                for f in [LOCKFILE, socket_path]:
-                    try:
-                        os.remove(f)
-                    except Exception:
-                        pass
+                for f in [DEFAULT_LOCKFILE, DEFAULT_SOCK_PATH]:
+                    try: os.remove(f)
+                    except Exception: pass
                 click.echo("Dev server stopped.")
             return
+
         
         settings["DEBUG"] = False
         # Define the socket path
