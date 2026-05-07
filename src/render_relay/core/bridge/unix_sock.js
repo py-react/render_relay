@@ -25,7 +25,7 @@ const debug_log = (msg) => {
 
 debug_log("Running in debug mode, This setting is Not Recomeneded for production use")
 const cwd = getArgValue("cwd",join("./"));
-const ssr = new SSR(cwd);
+const ssr = new SSR(cwd, debug);
 try {
   const console_log = debug_log;
 

@@ -13,19 +13,29 @@ settings = load_settings()
 package_manager = settings.get('PACKAGE_MANAGER')
 debug = settings.get("DEBUG") or False
 
-def create_react_app():
+def create_react_app(debug_override=None):
+    # Use override if provided, otherwise check env, then settings
+    is_debug = debug_override
+    if is_debug is None:
+        is_debug = os.environ.get("DEBUG") == "True" or settings.get("DEBUG") or False
+    
     my_env = os.environ.copy()
     for key, value in settings.items():
         my_env[key] = str(value)
+    my_env["DEBUG"] = "True" if is_debug else "False"
     my_env["STATIC_SITE"] = str(settings.get("STATIC_SITE",False))
+    
     cwd = os.getcwd()
     app_files = find_jsx_files(
         directory_path= os.path.join(cwd, "src", "app"),
         settings=settings,
     )
-    createReactAppUtil = CreateReactAppUtil(paths=app_files,settings=settings,my_env=my_env,debug=debug)
+    createReactAppUtil = CreateReactAppUtil(paths=app_files,settings=settings,my_env=my_env,debug=is_debug)
     createReactAppUtil.initial_steps()
+    
     if (not settings.get("STATIC_SITE",False)):
+        # ... (rest of the copy logic) ...
+
         for dirpath, _, filenames in os.walk(os.path.join(get_base(),"public","templates")):
             for filename in filenames:
                 if filename != "layout.html" and filename!="index.html" and filename!="static_site.html":

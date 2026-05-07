@@ -15,10 +15,10 @@ function vitePluginInjectLayout() {
     name: 'vite-plugin-inject-layout',
     async writeBundle(options, bundle) {
       const layoutPath = path.join(process.cwd(), "public", "templates", MAIN_HTML);
-      const outDir = path.join(process.cwd(), "_gingerjs", "build","templates");
+      const outDir = path.join(process.cwd(), "_gingerjs", "build", "templates");
       const indexPath = resolve(outDir, 'layout.html'); // Output HTML file
-      const jsFileDir = path.join(process.cwd(), "_gingerjs", "build","static","js")
-      const cssFileDir = path.join(process.cwd(), "_gingerjs", "build","static","css")
+      const jsFileDir = path.join(process.cwd(), "_gingerjs", "build", "static", "js")
+      const cssFileDir = path.join(process.cwd(), "_gingerjs", "build", "static", "css")
       try {
         const layoutContent = await readFile(layoutPath, 'utf-8');
         let scriptTags = '';
@@ -42,17 +42,27 @@ function vitePluginInjectLayout() {
             const fullPath = path.join(directory, file.name);
             if (file.isDirectory()) {
               await findJsFiles(fullPath);
-            } else if (file.name.endsWith('.js')) {
+            } else if (file.name.endsWith('.js') && file.name !== 'hmr_client.js') {
               const publicPath = fullPath.replace(jsFileDir, '/static/js');
               scriptTags += `<script defer type="module" src="${publicPath}"></script>\n`;
             }
           }
         }
-        
+
 
         // Start the search for JS files in the root of the output directory
-        await findJsFiles(jsFileDir);
-        await findCssFiles(cssFileDir);
+        if (fs.existsSync(jsFileDir)) {
+          await findJsFiles(jsFileDir);
+        }
+        if (fs.existsSync(cssFileDir)) {
+          await findCssFiles(cssFileDir);
+        }
+
+        // In debug mode, inject the HMR client script
+        const isDebug = process.env.DEBUG === "True";
+        if (isDebug) {
+          scriptTags += `<script defer src="/static/js/hmr_client.js"></script>\n`;
+        }
 
         const headTagIndex = layoutContent.lastIndexOf('</head>');
         if (headTagIndex !== -1) {
@@ -123,8 +133,8 @@ async function buildConfig() {
 
   // Determine entry points
   const entry = {
-      main:path.resolve(process.cwd(), "_gingerjs", "__build__", "main.jsx"),
-      global:path.resolve(process.cwd(), "src", "global.css")
+    main: path.resolve(process.cwd(), "_gingerjs", "__build__", "main.jsx"),
+    global: path.resolve(process.cwd(), "src", "global.css")
   };
 
   if (!fs.existsSync(path.resolve(process.cwd(), "src", "global.css"))) {
@@ -171,12 +181,12 @@ async function buildConfig() {
     mode: MODE,
     build: {
       outDir: path.resolve(process.cwd(), "_gingerjs", "build", "static"),
-      copyPublicDir: false, 
-      sourcemap:false,
+      copyPublicDir: false,
+      sourcemap: false,
       rollupOptions: {
         input: entry,
-        external:[],
-        preserveEntrySignatures:true,
+        external: [],
+        preserveEntrySignatures: true,
         output: {
           entryFileNames:
             MODE === "development" ? "js/[name].js" : "js/[name].[hash].js",
@@ -195,13 +205,13 @@ async function buildConfig() {
             // }
             // Default vendor chunk for node_modules
             if (id.includes("node_modules")) {
-                return "vendor";
+              return "vendor";
             }
           },
         },
       },
     },
-    
+
     plugins,
   });
 

@@ -1,0 +1,6 @@
+{
+    "title": "Production Blog System",
+    "description": "A high-performance, scalable blog system using RenderRelay. Features PostgreSQL, Redis caching, and Tailwind UI.",
+    "thumbnail": "/templates/blog.png",
+    "repo": "https://github.com/render-relay/production-blog"
+}

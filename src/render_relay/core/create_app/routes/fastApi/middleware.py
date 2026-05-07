@@ -1,6 +1,8 @@
 import re
+import inspect
 from starlette.middleware.base import BaseHTTPMiddleware
 from fastapi import Request,FastAPI
+from starlette.concurrency import run_in_threadpool
 
 
 
@@ -39,18 +41,27 @@ def Create_Middleware_Class(middleware_func,route,type):
             super().__init__(app)
 
         async def request_handler(self, request, call_next):
-            response = await middleware_func(request,call_next)
+            if inspect.iscoroutinefunction(middleware_func):
+                response = await middleware_func(request,call_next)
+            else:
+                response = await run_in_threadpool(middleware_func, request, call_next)
             return response
 
         async def dispatch(self, request: Request, call_next):
             # Check if the request path needs authentication
             if type == "view":
                 if match_static_to_dynamic(request.url.path,route) and not request.url.path.startswith("/api/"):
-                    response = await middleware_func(request,call_next)
+                    if inspect.iscoroutinefunction(middleware_func):
+                        response = await middleware_func(request,call_next)
+                    else:
+                        response = await run_in_threadpool(middleware_func, request, call_next)
                     return response
             else:
                 if match_static_to_dynamic(request.url.path,route):
-                    response = await middleware_func(request,call_next)
+                    if inspect.iscoroutinefunction(middleware_func):
+                        response = await middleware_func(request,call_next)
+                    else:
+                        response = await run_in_threadpool(middleware_func, request, call_next)
                     return response
 
             response = await call_next(request)

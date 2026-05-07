@@ -1,8 +1,12 @@
 import logging
+from datetime import datetime, timezone
 
-DEFAULT_SOCK_PATH = "/tmp/gingerjs_unix.sock"
+def now():
+    return datetime.now(timezone.utc).timestamp()
 
-DEFAULT_LOCKFILE = "/tmp/my_subprocess.lock"
+DEFAULT_SOCK_PATH = f"/tmp/render_relay_unix.sock"
+
+DEFAULT_LOCKFILE = f"/tmp/my_subprocess.lock"
 
 level_map = {
     "DEBUG": logging.DEBUG,

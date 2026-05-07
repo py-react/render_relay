@@ -1,0 +1,61 @@
+<svg width="200" height="200" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="lotus-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FF9933" />
+      <stop offset="100%" stop-color="#FF4D00" />
+    </linearGradient>
+    <linearGradient id="electric-blue" x1="0%" y1="100%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#00D2FF" />
+      <stop offset="100%" stop-color="#3A7BD5" />
+    </linearGradient>
+    <filter id="divine-glow" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="6" result="blur" />
+      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+    </filter>
+  </defs>
+
+  <!-- Four-Fold Cosmic Sight (The All-Seeing) -->
+  <g stroke="currentColor" stroke-width="1.5" stroke-opacity="0.3">
+    <circle cx="100" cy="100" r="90" stroke-dasharray="10 20" />
+    <path d="M100 10 L100 40 M100 160 L100 190 M10 100 L40 100 M160 100 L190 100" />
+  </g>
+
+  <!-- Geometric Cyber-Lotus (The Creator's Seat) -->
+  <g filter="url(#divine-glow)">
+    <!-- Bottom Petals -->
+    <path d="M100 140 L130 170 L100 185 L70 170 Z" fill="url(#lotus-grad)" />
+    <!-- Left Petals -->
+    <path d="M60 100 L30 130 L15 100 L30 70 Z" fill="url(#lotus-grad)" />
+    <!-- Right Petals -->
+    <path d="M140 100 L170 130 L185 100 L170 70 Z" fill="url(#lotus-grad)" />
+    <!-- Top Petals -->
+    <path d="M100 60 L130 30 L100 15 L70 30 Z" fill="url(#lotus-grad)" />
+    
+    <!-- Central Energetic Core (The Seed of Creation) -->
+    <circle cx="100" cy="100" r="35" stroke="url(#electric-blue)" stroke-width="4" stroke-dasharray="5 5">
+      <animateTransform attributeName="transform" type="rotate" from="0 100 100" to="360 100 100" dur="8s" repeatCount="indefinite" />
+    </circle>
+    
+    <!-- Inner Radiant Core -->
+    <!-- Using fill opacity to ensure it's visible but not washing out -->
+    <path d="M85 85 L115 85 L100 120 Z" fill="currentColor">
+      <animate attributeName="opacity" values="0.7;1;0.7" dur="2s" repeatCount="indefinite" />
+    </path>
+  </g>
+
+  <!-- Electric Discharge (Manifestation of Will) -->
+  <g stroke="url(#electric-blue)" stroke-width="2" stroke-linecap="round">
+    <path d="M80 60 L60 40">
+      <animate attributeName="stroke-dasharray" from="0, 50" to="50, 0" dur="1s" repeatCount="indefinite" />
+    </path>
+    <path d="M120 60 L140 40">
+      <animate attributeName="stroke-dasharray" from="0, 50" to="50, 0" dur="1s" repeatCount="indefinite" />
+    </path>
+    <path d="M80 140 L60 160">
+      <animate attributeName="stroke-dasharray" from="0, 50" to="50, 0" dur="1.2s" repeatCount="indefinite" />
+    </path>
+    <path d="M120 140 L140 160">
+      <animate attributeName="stroke-dasharray" from="0, 50" to="50, 0" dur="1.2s" repeatCount="indefinite" />
+    </path>
+  </g>
+</svg>

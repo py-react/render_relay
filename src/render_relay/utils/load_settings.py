@@ -10,7 +10,9 @@ def load_settings():
         'DEBUG': True,
         "PORT": 5001,
         "HOST": "0.0.0.0",
-        "PYTHONDONTWRITEBYTECODE" : ""
+        "PYTHONDONTWRITEBYTECODE" : "",
+        "CWD": os.getcwd(),
+        "STATIC_SITE": False
     }
     settings_path = os.path.join(os.getcwd(), 'settings.py')
     if os.path.exists(settings_path):

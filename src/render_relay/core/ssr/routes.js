@@ -45,28 +45,25 @@ class LoggingWritableStream extends Writable {
   }
 }
 
+import { pathToFileURL } from 'url';
+
 class SSR {
-  constructor(cwd) {
-    this.cwd = cwd
+  constructor(cwd, debug = false) {
+    this.cwd = cwd;
+    this.debug = debug;
   }
   async render(props) {
     return new Promise(async(resolve, reject) => {
       try {
-        const App = await import(_resolve("./","_gingerjs", "build", "_gingerjs","__build__", "app.js"));
-        const StaticRouter = await import(_resolve(
-          "./",
-          "_gingerjs",
-          "build",
-          "_gingerjs","__build__",
-          "StaticRouterWrapper.js"
-        ));
-        const {getAppContext} = await import(_resolve(
-          "./",
-          "_gingerjs",
-          "build",
-          "app",
-          "layout.js"
-        ));
+        const cacheBuster = this.debug ? `?v=${Date.now()}` : '';
+        const getImportPath = (p) => {
+            const absPath = _resolve(p);
+            return pathToFileURL(absPath).href + cacheBuster;
+        };
+
+        const App = await import(getImportPath("./_gingerjs/build/_gingerjs/__build__/app.js"));
+        const StaticRouter = await import(getImportPath("./_gingerjs/build/_gingerjs/__build__/StaticRouterWrapper.js"));
+        const {getAppContext} = await import(getImportPath("./_gingerjs/build/app/layout.js"));
         const { location } = props;
         const ReactElement = _createElement(App.default, {
           children: null,

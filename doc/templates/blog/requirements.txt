@@ -1,0 +1,10 @@
+fastapi
+uvicorn
+sqlalchemy[asyncio]
+asyncpg
+pydantic
+pydantic-settings
+redis
+python-dotenv
+render-relay @ file:///Users/deep/Documents/personal/py-react/render_relay
+

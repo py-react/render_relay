@@ -1,6 +1,8 @@
 import re
+import inspect
 from starlette.middleware.base import BaseHTTPMiddleware
 from fastapi import Request,FastAPI
+from starlette.concurrency import run_in_threadpool
 
 
 
@@ -30,13 +32,19 @@ def Create_Layout_Middleware_Class(middleware_func,route):
                 super().__init__(app)
 
             async def request_handler(self, request, call_next):
-                response = await middleware_func(request,call_next)
+                if inspect.iscoroutinefunction(middleware_func):
+                    response = await middleware_func(request,call_next)
+                else:
+                    response = await run_in_threadpool(middleware_func, request, call_next)
                 return response
 
             async def dispatch(self, request: Request, call_next):
                 # Check if the request path needs authentication
                 if match_static_to_dynamic(request.url.path,route) and not request.url.path.startswith("/api/") and not request.url.path.startswith("/static/"):
-                    layoutData = await middleware_func(request)
+                    if inspect.iscoroutinefunction(middleware_func):
+                        layoutData = await middleware_func(request)
+                    else:
+                        layoutData = await run_in_threadpool(middleware_func, request)
                     if hasattr(request,"prop_data"):
                         request.state.prop_data[route] = layoutData
                     else:

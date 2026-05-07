@@ -1,5 +1,6 @@
 
 import os
+import sys
 import importlib.util
 import signal
 import psutil
@@ -11,14 +12,18 @@ import json
 
 logger = logging.getLogger(__name__)
 
-def load_module(module_name,module_path):
+def load_module(module_name, module_path):
+    if module_name in sys.modules:
+        return sys.modules[module_name]
     try:
-        module_name = module_name
         spec = importlib.util.spec_from_file_location(module_name, module_path)
         module = importlib.util.module_from_spec(spec)
+        sys.modules[module_name] = module
         spec.loader.exec_module(module)
         return module
     except Exception as e:
+        if module_name in sys.modules:
+            del sys.modules[module_name]
         raise e
 
 def kill_process(process):
