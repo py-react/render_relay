@@ -162,11 +162,11 @@
     async function copyFullPrompt() {
 
       // ── FULL README_FRAMEWORK.md CONTENT ──────────────────────────────────
-      const readmeContent = `GingerJs — Full-Stack Development Experience with Python and React
+      const readmeContent = `KiwiJs — Full-Stack Development Experience with Python and React
 
 Unlike typical setups where Node.js serves as the backend for frontend applications, this project leverages Python to deliver a comprehensive full-stack solution.
 
-Note: The GingerJs meta-framework is currently under development. Features and specifications are subject to change.
+Note: The KiwiJs meta-framework is currently under development. Features and specifications are subject to change.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 INSTALL
@@ -176,14 +176,14 @@ INSTALL
 uv venv env
 source env/bin/activate
 
-# Install GingerJS
-uv pip install /path/to/render_relay
+# Install KiwiJs
+uv pip install kiwijs
 
 # Create your app
-render_relay create-app
+kiwijs create-app
 
 # Run the dev server (default port: 5001)
-render_relay runserver
+kiwijs runserver
 
 # Change port in settings.py if needed
 PORT=3000
@@ -347,7 +347,7 @@ def extend_app(app: FastAPI):
 TYPE-SAFE API CLIENT
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-import { DefaultService } from "@/gingerJs_api_client";
+import { DefaultService } from "@/KiwiJs_api_client";
 await DefaultService.apiTestGet();
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -372,17 +372,17 @@ index function definition.`;
       // any AI agent receiving this prompt understands its role, constraints,
       // and expected output format before reading the framework docs.
       const agentInstructions = `═══════════════════════════════════════════════════════════
-  SYSTEM PROTOCOL — GINGERJS ENGINEERING AGENT
+  SYSTEM PROTOCOL — KiwiJs ENGINEERING AGENT
 ═══════════════════════════════════════════════════════════
 
-You are an expert full-stack engineer specialising in GingerJs (also referred
+You are an expert full-stack engineer specialising in KiwiJs (also referred
 to as KiwiJs / py-react) — a meta-framework that unifies FastAPI (Python) and
 React (JSX) into a single, file-system-driven architecture.
 
 ──────────────────────────────────────────────────────────
 ROLE & OBJECTIVE
 ──────────────────────────────────────────────────────────
-Your goal is to help build, debug, and extend GingerJs applications by strictly
+Your goal is to help build, debug, and extend KiwiJs applications by strictly
 adhering to the framework's conventions. You must never suggest patterns that
 belong to Next.js, Remix, or Node-based full-stack frameworks unless explicitly
 asked to compare them.
@@ -416,8 +416,8 @@ MANDATORY CONVENTIONS — ALWAYS ENFORCE THESE
    - Applies to all requests that pass through that route segment.
 
 6. CLI
-   - render_relay create-app   → scaffold a new project
-   - render_relay runserver    → start the dev server (default port 5001)
+   - kiwijs create-app   → scaffold a new project
+   - kiwijs runserver    → start the dev server (default port 5001)
 
 ──────────────────────────────────────────────────────────
 OUTPUT FORMAT RULES
@@ -440,7 +440,7 @@ ${readmeContent}
   END OF PROTOCOL — AWAITING YOUR TASK
 ═══════════════════════════════════════════════════════════
 
-Please describe what you need to build or fix, and I will follow the GingerJs
+Please describe what you need to build or fix, and I will follow the KiwiJs
 conventions above to help you implement it correctly.`;
 
       navigator.clipboard.writeText(fullPrompt).then(() => {
