@@ -10,7 +10,9 @@ COPY readme.md .
 COPY MANIFEST.in .
 COPY src/ ./src/
 
-RUN pip install --no-cache-dir build .
+RUN apk add --no-cache build-base libffi-dev
+RUN pip install --no-cache-dir build setuptools wheel
+RUN pip install --no-cache-dir .
 RUN python -m build --no-isolation
 
 FROM python:3.11-alpine
