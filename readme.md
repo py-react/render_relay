@@ -1,13 +1,13 @@
-<h1 align="center">GingerJs</h1>
+<h1 align="center">KiwiJs</h1>
 <h2 align="center">
   ✨ 🚀 Full-Stack Development Experience with Python and React ✨ 🚀 <br/>
 </h2>
 
 Unlike typical setups where Node.js serves as the backend for frontend applications, this project leverages Python to deliver a comprehensive full-stack solution.
 
-`Note: The GingerJs meta-framework is currently under development. As such, features and specifications are subject to change as we refine and enhance the framework`
+`Note: The KiwiJs meta-framework is currently under development. As such, features and specifications are subject to change as we refine and enhance the framework`
 
-### Install GingerJS
+### Install KiwiJs
 
 #### Python Environment and Requirements
 Create a virtual environment to manage dependencies locally:
@@ -25,11 +25,15 @@ Alternatively:
 ```
 
 
-Now, you need to install GingerJS using `pip`. Open your terminal or command prompt and run the following command:
+Now, you need to install KiwiJs using `pip`. Open your terminal or command prompt and run the following command:
 
 
 ```shell
 pip install git+https://github.com/py-react/render_relay.git
+```
+
+```shell
+pip install kiwijs
 ```
 
 ### Create your app
@@ -41,14 +45,14 @@ render_relay create-app
 ### Run server
 
 ```bash
-render_relay runserver
+npm run dev
 ```
 
 
 The application will run on port 5001 by default.
 If 5001 is already in use, You can change the default port by adding port in `settings.py`
 ```python
-PORT=3000
+PORT=5001
 ```
 
 ## Main Features
@@ -99,7 +103,7 @@ The two layouts would be nested as such:
 ![NextJs Multi layout example image](https://nextjs.org/_next/image?url=%2Fdocs%2Flight%2Fnested-layouts-ui.png&w=3840&q=75)
 
 ## Linking and Navigating
-There are currently two ways to navigate between routes in gingerJs:
+There are currently two ways to navigate between routes in KiwiJs:
 
 - Using the Link Component (currently exported from libs)
 - Using the useNavigate hook (currently exported from libs)
@@ -368,7 +372,7 @@ Below snippets demonstrates how to use the FastAPI client with type safety for i
 #### Step 1: Import the Service
 Begin by importing the service module into your project
 ```js
-import { DefaultService } from "@/gingerJs_api_client";
+import { DefaultService } from "@/KiwiJs_api_client";
 ```
 This will allow you to interact with the API endpoints defined in the FastAPI server.
 
@@ -386,5 +390,5 @@ By leveraging the type safety features, you get better auto-completion, error ha
 Clone this repo and run
 
 ```bash
-pip install absolute/relative/path/to/repo
+pip install kiwijs
 ```

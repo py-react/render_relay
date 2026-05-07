@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "render_relay"
-version = "0.0.2"
+version = "0.0.1"
 description = "Passing the baton of rendered HTML from server to client"
 readme = "readme.md"
 authors = [
