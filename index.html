@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>KiwiJs — The Unified Stack</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link
+    href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400..800;1,400..800&family=Outfit:wght@100..900&display=swap"
+    rel="stylesheet" />
+  <style>
+    body {
+      font-family: 'Outfit', sans-serif;
+      background-color: #020617;
+      color: #ffffff;
+      margin: 0;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      background-image: url('https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=2564&auto=format&fit=crop');
+      background-size: cover;
+      background-position: center;
+    }
+
+    .bg-overlay {
+      position: fixed;
+      inset: 0;
+      background: linear-gradient(75deg, rgba(2, 6, 23, 0.95) 0%, rgba(2, 6, 23, 0.7) 50%, rgba(2, 6, 23, 0.4) 100%);
+      z-index: -1;
+    }
+
+    .serif-italic {
+      font-family: 'EB Garamond', serif;
+      font-style: italic;
+      font-weight: 500;
+    }
+
+    .tracking-tighter-custom {
+      letter-spacing: -0.05em;
+    }
+
+    .btn-primary {
+      background-color: #f59e0b;
+      color: #000;
+      font-weight: 700;
+      padding: 16px 32px;
+      border-radius: 100px;
+      transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    .btn-primary:hover {
+      background-color: #fbbf24;
+      transform: scale(1.05) translateY(-2px);
+      box-shadow: 0 10px 30px rgba(245, 158, 11, 0.2);
+    }
+
+    .btn-secondary {
+      background-color: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      color: #fff;
+      padding: 16px 32px;
+      border-radius: 100px;
+      transition: all 0.4s ease;
+    }
+
+    .btn-secondary:hover {
+      background-color: rgba(255, 255, 255, 0.08);
+      border-color: rgba(255, 255, 255, 0.2);
+    }
+
+    .mono {
+      font-family: monospace;
+      font-size: 11px;
+      letter-spacing: 0.3em;
+      text-transform: uppercase;
+      color: rgba(255, 255, 255, 0.3);
+    }
+
+    .content-wrapper {
+      width: 100%;
+      max-width: 1000px;
+      /* Increased width */
+      margin-left: 0;
+      /* Left alignment */
+      padding-left: 10%;
+      /* Start from a bit inside */
+    }
+  </style>
+</head>
+
+<body>
+  <div class="bg-overlay"></div>
+
+  <nav class="fixed top-0 w-full z-50 bg-slate-950/50 backdrop-blur-xl border-b border-white/5">
+    <div class="w-full px-[10%] h-20 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <div
+          class="w-8 h-8 bg-amber-500 rounded-lg flex items-center justify-center shadow-[0_0_20px_rgba(245,158,11,0.4)]">
+          <span class="text-black text-xs font-black italic">KJS</span>
+        </div>
+        <span class="text-xl font-bold tracking-tight text-white">KiwiJs</span>
+      </div>
+      <div class="flex items-center gap-10 text-sm font-medium text-slate-400">
+        <a href="#" class="hover:text-white transition-colors">Documentation</a>
+        <a href="#" class="hover:text-white transition-colors">GitHub</a>
+      </div>
+    </div>
+  </nav>
+
+  <main class="flex-grow flex flex-col justify-center pt-24 pb-10 z-10">
+    <div class="content-wrapper">
+      <div class="mb-6">
+        <span class="mono tracking-[0.5em]">The Full-Stack Evolution</span>
+      </div>
+
+      <h1 class="text-5xl md:text-7xl leading-[1.1] tracking-tighter-custom mb-10">
+        <span class="serif-italic text-amber-500">Effortless</span> <br />
+        <span class="font-extrabold">full-stack.</span>
+      </h1>
+
+      <div class="space-y-8 max-w-4xl">
+        <div class="group">
+          <h2 class="text-xs font-bold uppercase tracking-widest text-amber-500/60 mb-2">The Problem</h2>
+          <p class="text-xl md:text-2xl text-slate-300 leading-relaxed font-light">
+            Modern development is <span class="text-white font-medium">fractured.</span> The constant toggle between
+            Python logic and React interfaces creates a cognitive gap, forcing developers to manage complex
+            data-fetching layers that stifle creativity.
+          </p>
+        </div>
+
+        <div class="group">
+          <h2 class="text-xs font-bold uppercase tracking-widest text-emerald-500/60 mb-2">The Solution</h2>
+          <p class="text-xl md:text-2xl text-slate-300 leading-relaxed font-light">
+            KiwiJs <span class="text-white font-medium">collapses the stack.</span> By unifying FastAPI and React into a
+            single, cohesive file-system architecture, it eliminates boilerplate and lets you build features at the
+            speed of thought.
+          </p>
+        </div>
+      </div>
+
+      <div class="mt-12 flex flex-row items-center gap-6">
+        <button onclick="copyFullPrompt()"
+          class="btn-primary text-xs uppercase tracking-widest flex items-center gap-2">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M8 5H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-1M8 5a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2M8 5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2" />
+          </svg>
+          Copy Prompt
+        </button>
+
+        <div id="tooltip"
+          class="tooltip ml-4 text-[10px] font-black tracking-[0.2em] text-amber-500 opacity-0 transition-opacity">
+          PROMPT COPIED TO CLIPBOARD
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    async function copyFullPrompt() {
+
+      // ── FULL README_FRAMEWORK.md CONTENT ──────────────────────────────────
+      const readmeContent = `KiwiJs — Full-Stack Development Experience with Python and React
+
+Unlike typical setups where Node.js serves as the backend for frontend applications, this project leverages Python to deliver a comprehensive full-stack solution.
+
+Note: The KiwiJs meta-framework is currently under development. Features and specifications are subject to change.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+INSTALL
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+# Create and activate a virtual environment
+uv venv env
+source env/bin/activate
+
+# Install KiwiJs
+uv pip install kiwijs
+
+# Create your app
+kiwijs create-app
+
+# Run the dev server (default port: 5001)
+kiwijs runserver
+
+# Change port in settings.py if needed
+PORT=3000
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+MAIN FEATURES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Routing   — File-system based router built on FastAPI and Server Components.
+            Supports layouts, nested routing, loading states, and more.
+Rendering — Client-side and Server-side Rendering with Client and Server Components.
+            Further optimized with Static and Dynamic Rendering on the server.
+Styling   — CSS Modules, Tailwind CSS, and CSS-in-JS all supported.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+LAYOUTS  (layout.jsx)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+A layout is shared UI between multiple routes. Define it by default-exporting
+a React component from layout.jsx. Use <Outlet /> to render child segments.
+
+// src/app/layout.jsx
+import React from "react";
+import Header from "../components/header";
+import { Outlet } from "react-router-dom";
+
+const Layout = (props) => (
+  <div className="p-4">
+    <Header />
+    <Outlet />
+  </div>
+);
+
+export default Layout;
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+LINKING & NAVIGATING
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Two ways to navigate between routes:
+  - <Link> component  (imported from libs)
+  - useNavigate hook  (imported from libs)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+DYNAMIC ROUTES  ([folderName])
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Wrap a folder name in square brackets to create a dynamic segment.
+Example: src/app/products/[productId]/index.jsx
+
+// Option A — useParams hook
+import { useParams } from "react-router-dom";
+function Product() {
+  const { productId } = useParams();
+  return <>{productId}</>;
+}
+
+// Option B — destructured props
+function Product({ productId }) {
+  return <>{productId}</>;
+}
+
+export default Product;
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SERVER-SIDE PROPS  (index.py)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Server logic lives in index.py alongside index.jsx / layout.jsx.
+
+Page handler — src/app/index.py
+  from fastapi import Request
+  import requests
+
+  async def index(request: Request):
+      response = requests.get("https://dummyjson.com/products/")
+      if response.status_code == 200:
+          return {"products": response.json()}
+      return {"products": {"data": None, "error": {"message": "Something went wrong!"}}}
+
+Layout handler — src/app/index.py
+  def layout(request: Request):
+      return {"serverData": "some_data"}
+
+Layout client — src/app/layout.jsx
+  function Layout({ serverData }) {
+    return (
+      <div className="p-0 m-0">
+        <Header data={serverData} />
+        <Outlet />
+      </div>
+    );
+  }
+
+Middleware — src/app/index.py
+  async def middleware(request: Request, call_next):
+      token = request.headers.get("X-Auth-Token")
+      if token != "secret-token":
+          pass  # raise 403
+      return call_next(request)
+
+API route + middleware — src/app/api/product/index.py
+  async def GET(request: Request):
+      data = {k: v for k, v in request.args.items()}
+      return {"query": data}
+
+  async def middleware(request: Request, call_next):
+      token = request.headers.get("X-Auth-Token")
+      if token != "secret-token":
+          pass  # raise 403
+      return call_next(request)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+METADATA  (index.py)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+def meta_data():
+    return {
+        "title": "Ginger-Js",
+        "description": "Some Description",
+        "og:description": "Description Here",
+        "icon": "/static/images/favicon.ico",
+    }
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+THEMING  (layout.jsx)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+import { ThemeProvider } from "src/libs/theme-provider";
+
+function Layout(props) {
+  return (
+    <ThemeProvider attribute="class" defaultTheme="light" enableSystem>
+      <div className="p-0 m-0 dark:bg-gray-800 dark:text-white">
+        <Outlet />
+      </div>
+    </ThemeProvider>
+  );
+}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+EXTEND THE MAIN APP  (extend_app)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+from fastapi import FastAPI, Request
+from starlette.middleware.base import BaseHTTPMiddleware
+import time
+
+class RequestLoggerMiddleware(BaseHTTPMiddleware):
+    async def dispatch(self, request: Request, call_next):
+        start = time.time()
+        response = await call_next(request)
+        duration = round(time.time() - start, 4)
+        print(f"[{request.method}] {request.url.path} | {response.status_code} | {duration}s")
+        return response
+
+def extend_app(app: FastAPI):
+    app.add_middleware(RequestLoggerMiddleware)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+TYPE-SAFE API CLIENT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+import { DefaultService } from "@/KiwiJs_api_client";
+await DefaultService.apiTestGet();
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+OVERRIDE WEBPACK CONFIG  (ginger_conf.cjs at project root)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+module.exports = { webpack: {} }
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+CRITICAL CONSTRAINT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Every view route MUST have both index.py (with an \`index\` function definition)
+AND index.jsx in the same folder. This applies to all parent folders in a nested route.
+
+Note: framework requires to have a index.py as well with index.tsx to register
+as a view route and if nested all parent folders also require a index.py with an
+index function definition.`;
+
+      // ── AGENT-SPECIFIC SYSTEM INSTRUCTIONS ───────────────────────────────
+      // These instructions are prepended before the documentation so that
+      // any AI agent receiving this prompt understands its role, constraints,
+      // and expected output format before reading the framework docs.
+      const agentInstructions = `═══════════════════════════════════════════════════════════
+  SYSTEM PROTOCOL — KiwiJs ENGINEERING AGENT
+═══════════════════════════════════════════════════════════
+
+You are an expert full-stack engineer specialising in KiwiJs (also referred
+to as KiwiJs / py-react) — a meta-framework that unifies FastAPI (Python) and
+React (JSX) into a single, file-system-driven architecture.
+
+──────────────────────────────────────────────────────────
+ROLE & OBJECTIVE
+──────────────────────────────────────────────────────────
+Your goal is to help build, debug, and extend KiwiJs applications by strictly
+adhering to the framework's conventions. You must never suggest patterns that
+belong to Next.js, Remix, or Node-based full-stack frameworks unless explicitly
+asked to compare them.
+
+──────────────────────────────────────────────────────────
+MANDATORY CONVENTIONS — ALWAYS ENFORCE THESE
+──────────────────────────────────────────────────────────
+1. FILE STRUCTURE
+   - Every view route folder MUST contain BOTH index.py AND index.jsx.
+   - index.py  → server logic (index / layout / middleware / meta_data functions)
+   - index.jsx → React UI component (default export)
+   - layout.jsx → shared layout with <Outlet /> for child segments
+
+2. ROUTING
+   - File-system based: folder structure = URL structure.
+   - Dynamic segments use square brackets: [paramName]
+   - Access params via useParams() or destructured component props.
+
+3. SERVER-SIDE DATA
+   - Define async def index(request: Request) in index.py to pass props to the page.
+   - Define def layout(request: Request) to pass props to the layout component.
+   - Props returned from Python are automatically injected as React component props.
+
+4. API ROUTES
+   - Place under src/app/api/…/index.py
+   - Export HTTP method functions: async def GET / POST / PUT / DELETE(request)
+   - Optionally add async def middleware(request, call_next) in the same file.
+
+5. MIDDLEWARE
+   - Define async def middleware(request, call_next) in any index.py.
+   - Applies to all requests that pass through that route segment.
+
+6. CLI
+   - kiwijs create-app   → scaffold a new project
+   - kiwijs runserver    → start the dev server (default port 5001)
+
+──────────────────────────────────────────────────────────
+OUTPUT FORMAT RULES
+──────────────────────────────────────────────────────────
+- Always show the full file path before each code block.
+- Provide complete, copy-paste-ready code — no partial snippets without context.
+- If creating a new route, always generate BOTH index.py and index.jsx.
+- Flag any deviation from the above conventions with a ⚠️  warning.
+- When uncertain about a spec, ask a clarifying question rather than guessing.
+
+──────────────────────────────────────────────────────────
+FRAMEWORK DOCUMENTATION FOLLOWS BELOW
+──────────────────────────────────────────────────────────`;
+
+      const fullPrompt = `${agentInstructions}
+
+${readmeContent}
+
+═══════════════════════════════════════════════════════════
+  END OF PROTOCOL — AWAITING YOUR TASK
+═══════════════════════════════════════════════════════════
+
+Please describe what you need to build or fix, and I will follow the KiwiJs
+conventions above to help you implement it correctly.`;
+
+      navigator.clipboard.writeText(fullPrompt).then(() => {
+        const tooltip = document.getElementById('tooltip');
+        tooltip.style.opacity = '1';
+        setTimeout(() => {
+          tooltip.style.opacity = '0';
+        }, 3000);
+      });
+    }
+  </script>
+</body>
+
+</html>
