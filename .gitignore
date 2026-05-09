@@ -1,6 +1,7 @@
 node_modules
 env
-render_relay.egg-info
+.venv
+*.egg-info/
 __pycache__
 build
 dist
