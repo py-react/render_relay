@@ -54,7 +54,7 @@ class CreateReactAppUtil:
     def get_src_part_replacer(self):
         if self.settings.get("STATIC_SITE",False):
             return os.path.sep.join(["","src",""])
-        return os.path.sep.join(["","_gingerjs","build",""])
+        return os.path.sep.join(["","_kiwijs","build",""])
     
     def replace_wildcards_in_component_name(self,path):
         # Define the regex pattern to match any text within square brackets
@@ -220,7 +220,7 @@ class CreateReactAppUtil:
     def copy_public_static(self,):
         # Construct the source and destination paths
         source_path = os.path.join(get_base(), 'public', 'static')
-        destination_path = os.path.join(get_base(), '_gingerjs', 'build', 'static', "assets")
+        destination_path = os.path.join(get_base(), '_kiwijs', 'build', 'static', "assets")
 
         # Iterate through the source directory
         for root, dirs, files in os.walk(source_path):
@@ -237,10 +237,10 @@ class CreateReactAppUtil:
         if self.cwd is None:
             raise ValueError("Current working directory not provided")
         
-        ginger_path = os.path.join(self.cwd, "_gingerjs")
+        ginger_path = os.path.join(self.cwd, "_kiwijs")
         build_path = os.path.join(ginger_path, "__build__")
         
-        # Ensure _gingerjs exists
+        # Ensure _kiwijs exists
         os.makedirs(ginger_path, exist_ok=True)
         
         # Only clean the __build__ directory for React segments
@@ -257,7 +257,7 @@ class CreateReactAppUtil:
 
         # Ensure main.py and __init__.py exist but don't overwrite if they are fine
         # Actually copying main.py is fine as it's just the entry point
-        copy_file_if_not_exists(os.path.join(get_current_dir(__file__),"app_boiler_plate","main.py"),os.path.join(self.cwd,"_gingerjs","main.py"),shutil.copy)
+        copy_file_if_not_exists(os.path.join(get_current_dir(__file__),"app_boiler_plate","main.py"),os.path.join(self.cwd,"_kiwijs","main.py"),shutil.copy)
         
         init_file = os.path.join(ginger_path, "__init__.py")
         if not os.path.exists(init_file):
@@ -277,10 +277,10 @@ class CreateReactAppUtil:
         copy_file_if_not_exists(os.path.join(react_components_path, "DefaultLoader.jsx"), os.path.join(
             build_path, "DefaultLoader.jsx"))
 
-        with open(os.path.join(self.cwd,"_gingerjs", "__build__", "app.jsx"), "w") as file:
+        with open(os.path.join(self.cwd,"_kiwijs", "__build__", "app.jsx"), "w") as file:
             file.write(self.get_app_content())
 
-        with open(os.path.join(self.cwd,"_gingerjs", "__build__", "main.jsx"), "w") as file:
+        with open(os.path.join(self.cwd,"_kiwijs", "__build__", "main.jsx"), "w") as file:
             file.write(self.get_main_client())
 
         if self.debug:

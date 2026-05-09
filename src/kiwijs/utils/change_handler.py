@@ -36,8 +36,7 @@ class ChangeHandler(FileSystemEventHandler):
         ignore_list = [
             "__pycache__", 
             "kiwijs_api_client", 
-            "gingerjs_api_client", 
-            "_gingerjs", 
+            "_kiwijs", 
             "node_modules", 
             "env",
             "venv",
@@ -150,8 +149,7 @@ class DevChangeHandler(FileSystemEventHandler):
 
     def on_any_event(self, event):
         ignore_list = [
-            "__pycache__", "kiwijs_api_client", "gingerjs_api_client",
-            "_gingerjs", "node_modules", "env", "venv", ".venv", ".git", ".DS_Store",
+            "__pycache__", "kiwijs_api_client", "_kiwijs", "node_modules", "env", "venv", ".venv", ".git", ".DS_Store",
             "public/static", ".tmp", ".swp", ".pyc", "openapi.json"
         ]
 

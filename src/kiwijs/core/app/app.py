@@ -23,7 +23,7 @@ class App(FastAPI):
         super().__init__(**kwargs)
         self._settings = load_settings()
         self.my_env = environ.copy()
-        self.template_folder= path.sep.join(["_gingerjs","build","templates"])
+        self.template_folder= path.sep.join(["_kiwijs","build","templates"])
         self.root_path= path.join(self._settings.get("CWD", getcwd()),"src","app")
         self.setTemplateEngine()
         self.setStaticPath()
@@ -59,7 +59,7 @@ class App(FastAPI):
     
     def setStaticPath(self):
         self.static_url_path='/static'
-        self.static_folder=path.sep.join(["_gingerjs","build","static"])
+        self.static_folder=path.sep.join(["_kiwijs","build","static"])
         static_app = FastAPI()
 
         async def serve_static_file(file_path: str)->FileResponse:
@@ -116,7 +116,7 @@ class App(FastAPI):
             get_current_dir(__file__), "..", "..", "utils",
             "react_components", "hmr_client.js"
         )
-        hmr_dest_dir = path.join(getcwd(), "_gingerjs", "build", "static", "js")
+        hmr_dest_dir = path.join(getcwd(), "_kiwijs", "build", "static", "js")
         hmr_dest = path.join(hmr_dest_dir, "hmr_client.js")
         try:
             Path(hmr_dest_dir).mkdir(parents=True, exist_ok=True)

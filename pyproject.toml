@@ -69,7 +69,7 @@ dependencies = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/py-react/render-relay"
+Homepage = "https://github.com/py-react/render_relay"
 
 [project.scripts]
 kiwijs = "kiwijs.cli:cli"

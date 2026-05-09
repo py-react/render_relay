@@ -15,22 +15,22 @@ function getArgValue(key, defaultValue = null) {
   return defaultValue;
 }
 
-const debug = getArgValue("debug", "False")==="True"?true:false;
+const debug = getArgValue("debug", "False") === "True" ? true : false;
 const debug_log = (msg) => {
   if (debug) {
     return console.log(`${process.pid} Node Bridge: ${msg}`);
   }
-  return ;
+  return;
 };
 
 debug_log("Running in debug mode, This setting is Not Recomeneded for production use")
-const cwd = getArgValue("cwd",join("./"));
+const cwd = getArgValue("cwd", join("./"));
 const ssr = new SSR(cwd, debug);
 try {
   const console_log = debug_log;
 
   // const args = process.argv.slice(2);
-  const socketPath = getArgValue("sock_path","/tmp/gingerjs_unix.sock");
+  const socketPath = getArgValue("sock_path", "/tmp/kiwijs_unix.sock");
   // Remove the socket file if it already exists
   if (existsSync(socketPath)) {
     try {
@@ -50,70 +50,70 @@ try {
     let expectedLength = null;
 
     connection.on("data", async (data) => {
-        buffer = Buffer.concat([buffer, data]);
+      buffer = Buffer.concat([buffer, data]);
 
-        while (true) {
-            if (expectedLength === null) {
-                if (buffer.length >= 4) {
-                    expectedLength = buffer.readUInt32BE(0);
-                    buffer = buffer.slice(4);
-                } else {
-                    break;
-                }
-            }
-
-            if (expectedLength !== null && buffer.length >= expectedLength) {
-                const message = buffer.slice(0, expectedLength).toString();
-                debug_log(`Received Data: ${message}`);
-
-                // Parse received data as JSON
-                let receivedData;
-                try {
-                    receivedData = JSON.parse(message);
-                } catch (err) {
-                    console.error(`Error parsing JSON: ${err}`);
-                    break;
-                }
-
-                // Handle different types of data
-                if (receivedData.type === "health_check") {
-                    const response = "200";
-                    const lengthBuffer = Buffer.alloc(4);
-                    lengthBuffer.writeUInt32BE(response.length, 0);
-                    connection.write(lengthBuffer);
-                    connection.write(response);
-                } else if (receivedData.type === "ssr" || receivedData.type === "partial_ssr") {
-                    let rendered;
-                    if (receivedData.type === "ssr") {
-                        rendered = await ssr.render(receivedData.data);
-                    } else {
-                        rendered = await ssr.partialRender(receivedData.data);
-                    }
-                    const lengthBuffer = Buffer.alloc(4);
-                    lengthBuffer.writeUInt32BE(rendered.length, 0);
-                    connection.write(lengthBuffer);
-                    connection.write(rendered);
-                }
-
-                // Reset for next message
-                buffer = buffer.slice(expectedLength);
-                expectedLength = null;
-            } else {
-                break;
-            }
+      while (true) {
+        if (expectedLength === null) {
+          if (buffer.length >= 4) {
+            expectedLength = buffer.readUInt32BE(0);
+            buffer = buffer.slice(4);
+          } else {
+            break;
+          }
         }
+
+        if (expectedLength !== null && buffer.length >= expectedLength) {
+          const message = buffer.slice(0, expectedLength).toString();
+          debug_log(`Received Data: ${message}`);
+
+          // Parse received data as JSON
+          let receivedData;
+          try {
+            receivedData = JSON.parse(message);
+          } catch (err) {
+            console.error(`Error parsing JSON: ${err}`);
+            break;
+          }
+
+          // Handle different types of data
+          if (receivedData.type === "health_check") {
+            const response = "200";
+            const lengthBuffer = Buffer.alloc(4);
+            lengthBuffer.writeUInt32BE(response.length, 0);
+            connection.write(lengthBuffer);
+            connection.write(response);
+          } else if (receivedData.type === "ssr" || receivedData.type === "partial_ssr") {
+            let rendered;
+            if (receivedData.type === "ssr") {
+              rendered = await ssr.render(receivedData.data);
+            } else {
+              rendered = await ssr.partialRender(receivedData.data);
+            }
+            const lengthBuffer = Buffer.alloc(4);
+            lengthBuffer.writeUInt32BE(rendered.length, 0);
+            connection.write(lengthBuffer);
+            connection.write(rendered);
+          }
+
+          // Reset for next message
+          buffer = buffer.slice(expectedLength);
+          expectedLength = null;
+        } else {
+          break;
+        }
+      }
     });
 
     connection.on("end", () => {
-        debug_log("Client disconnected");
-        // Perform cleanup if needed
-        
+      debug_log("Client disconnected");
+      // Perform cleanup if needed
+
     });
 
     connection.on("error", (err) => {
-        debug_log(`Error: ${err.message}`);
+      debug_log(`Error: ${err.message}`);
     });
-});
+  });
 
 
   server.listen(socketPath, async () => {

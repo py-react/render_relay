@@ -56,16 +56,16 @@ PORT=5001
 ```
 
 ## Main Features
-Some of the main py-react features include:
+Some of the main KiwiJs features include:
 
 Feature | Description
 --- | --- 
 Routing | A file-system based router built on top of FastAPI and Server Components that supports layouts, nested routing, loading states, and more. 
-Rendering | Client-side and Server-side Rendering with Client and Server Components. Further optimized with Static and Dynamic Rendering on the server with py-react.
+Rendering | Client-side and Server-side Rendering with Client and Server Components. Further optimized with Static and Dynamic Rendering on the server with KiwiJs.
 Styling | Support for your preferred styling methods, including CSS Modules, Tailwind CSS, and CSS-in-JS
 
 ## Pre-Requisite Knowledge
-Although our docs are designed to be beginner-friendly, we need to establish a baseline so that the docs can stay focused on py-react functionality. We'll make sure to provide links to relevant documentation whenever we introduce a new concept.
+Although our docs are designed to be beginner-friendly, we need to establish a baseline so that the docs can stay focused on KiwiJs functionality. We'll make sure to provide links to relevant documentation whenever we introduce a new concept.
 
 To get the most out of our docs, it's recommended that you have a basic understanding of FastAPI,HTML, CSS, and React. If you need to brush up on your React skills, check out this [React Foundations Course](https://nextjs.org/learn/react-foundations) and [FastAPI](https://fastapi.tiangolo.com/), which will introduce you to the fundamentals.
 
@@ -312,7 +312,7 @@ Add Meta Data
 # add the below in your index.py file
 def meta_data():
     return {
-        "title": "Ginger-Js",
+        "title": "KiwiJs",
         "description": "Some Description",
         "og:description": "Description Here",
         "icon":"/static/images/favicon.ico"

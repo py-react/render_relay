@@ -15,8 +15,8 @@ class BuildManager:
         self.working_dir = self.settings.get("CWD", os.getcwd())
 
     def _ensure_boilerplate(self):
-        """Ensures that the _gingerjs boilerplate and public templates exist in the working directory."""
-        ginger_path = os.path.join(self.working_dir, "_gingerjs")
+        """Ensures that the _kiwijs boilerplate and public templates exist in the working directory."""
+        ginger_path = os.path.join(self.working_dir, "_kiwijs")
         os.makedirs(ginger_path, exist_ok=True)
         
         # Ensure __init__.py exists
@@ -58,7 +58,7 @@ class BuildManager:
         if not self._ensure_boilerplate():
             return False
 
-        self._logger.info("Attempting to load app instance from _gingerjs.main...")
+        self._logger.info("Attempting to load app instance from _kiwijs.main...")
         try:
             # Add working directory to sys.path to ensure local imports work
             import sys
@@ -66,21 +66,21 @@ class BuildManager:
                 sys.path.insert(0, self.working_dir)
 
             from kiwijs.utils.common import load_module
-            main_path = os.path.join(self.working_dir, "_gingerjs", "main.py")
+            main_path = os.path.join(self.working_dir, "_kiwijs", "main.py")
             
             if not os.path.exists(main_path):
                 self._logger.error(f"App entry point not found at {main_path}")
                 return False
 
             os.environ["RENDER_RELAY_SKIP_OPENAPI_GEN"] = "True"
-            module = load_module("gingerjs_main", main_path)
+            module = load_module("kiwijs_main", main_path)
             os.environ["RENDER_RELAY_SKIP_OPENAPI_GEN"] = "False"
             if hasattr(module, 'app'):
                 self.app_instance = module.app
-                self._logger.info("App instance loaded successfully from _gingerjs.main:app")
+                self._logger.info("App instance loaded successfully from _kiwijs.main:app")
                 return True
             else:
-                self._logger.error("No 'app' instance found in _gingerjs.main")
+                self._logger.error("No 'app' instance found in _kiwijs.main")
                 return False
         except Exception as e:
             self._logger.error(f"Failed to load app instance: {e}")
@@ -134,7 +134,7 @@ class BuildManager:
                     get_current_dir(__file__), "..", "utils",
                     "react_components", "hmr_client.js"
                 )
-                hmr_dest_dir = os.path.join(self.working_dir, "_gingerjs", "build", "static", "js")
+                hmr_dest_dir = os.path.join(self.working_dir, "_kiwijs", "build", "static", "js")
                 hmr_dest = os.path.join(hmr_dest_dir, "hmr_client.js")
                 try:
                     os.makedirs(hmr_dest_dir, exist_ok=True)

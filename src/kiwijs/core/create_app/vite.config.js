@@ -15,10 +15,10 @@ function vitePluginInjectLayout() {
     name: 'vite-plugin-inject-layout',
     async writeBundle(options, bundle) {
       const layoutPath = path.join(process.cwd(), "public", "templates", MAIN_HTML);
-      const outDir = path.join(process.cwd(), "_gingerjs", "build", "templates");
+      const outDir = path.join(process.cwd(), "_kiwijs", "build", "templates");
       const indexPath = resolve(outDir, 'layout.html'); // Output HTML file
-      const jsFileDir = path.join(process.cwd(), "_gingerjs", "build", "static", "js")
-      const cssFileDir = path.join(process.cwd(), "_gingerjs", "build", "static", "css")
+      const jsFileDir = path.join(process.cwd(), "_kiwijs", "build", "static", "js")
+      const cssFileDir = path.join(process.cwd(), "_kiwijs", "build", "static", "css")
       try {
         const layoutContent = await readFile(layoutPath, 'utf-8');
         let scriptTags = '';
@@ -133,7 +133,7 @@ async function buildConfig() {
 
   // Determine entry points
   const entry = {
-    main: path.resolve(process.cwd(), "_gingerjs", "__build__", "main.jsx"),
+    main: path.resolve(process.cwd(), "_kiwijs", "__build__", "main.jsx"),
     global: path.resolve(process.cwd(), "src", "global.css")
   };
 
@@ -180,7 +180,7 @@ async function buildConfig() {
     base: staticPath,
     mode: MODE,
     build: {
-      outDir: path.resolve(process.cwd(), "_gingerjs", "build", "static"),
+      outDir: path.resolve(process.cwd(), "_kiwijs", "build", "static"),
       copyPublicDir: false,
       sourcemap: false,
       rollupOptions: {

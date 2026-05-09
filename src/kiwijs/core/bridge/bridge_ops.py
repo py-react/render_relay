@@ -2,7 +2,7 @@ import socket
 import struct
 import json
 from kiwijs.utils import load_settings
-from kiwijs.utils.constant import DEFAULT_SOCK_PATH
+from kiwijs.utils.constant import get_sock_path
 from kiwijs.utils.get_logger import get_logger
 
 
@@ -10,7 +10,8 @@ class BridgeOperation:
     def __init__(self,debug: bool = False):
         self._logger = get_logger("BridgeOperation")
         self.settings = load_settings()
-        self.bridge_path: str = self.settings.get("CUSTOM_BRDIGE_PATH",DEFAULT_SOCK_PATH)
+        app_name = self.settings.get("NAME", "kiwijs")
+        self.bridge_path: str = self.settings.get("CUSTOM_BRDIGE_PATH", get_sock_path(app_name))
         self.debug = debug
         self.test_connection()
 

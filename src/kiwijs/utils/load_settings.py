@@ -4,7 +4,7 @@ import importlib.util
 # Load settings from settings.py if available
 def load_settings():
     settings = {
-        'NAME': 'GingerJs',
+        'NAME': 'KiwiJs',
         'VERSION': '1.0',
         'PACKAGE_MANAGER': 'npm',
         'DEBUG': True,
