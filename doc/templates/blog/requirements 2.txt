@@ -1,2 +1,0 @@
-brahma>=1.0.0
-# Add other Python dependencies here (e.g., sqlalchemy if needed)
