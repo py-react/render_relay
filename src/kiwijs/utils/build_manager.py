@@ -72,9 +72,9 @@ class BuildManager:
                 self._logger.error(f"App entry point not found at {main_path}")
                 return False
 
-            os.environ["RENDER_RELAY_SKIP_OPENAPI_GEN"] = "True"
+            os.environ["KIWIJS_SKIP_OPENAPI_GEN"] = "True"
             module = load_module("kiwijs_main", main_path)
-            os.environ["RENDER_RELAY_SKIP_OPENAPI_GEN"] = "False"
+            os.environ["KIWIJS_SKIP_OPENAPI_GEN"] = "False"
             if hasattr(module, 'app'):
                 self.app_instance = module.app
                 self._logger.info("App instance loaded successfully from _kiwijs.main:app")
@@ -128,20 +128,20 @@ class BuildManager:
             create_react_app(debug_override=debug)
             
             if debug:
-                # Ensure HMR client is in the build directory AFTER vite starts
+                # Ensure Live Reload client is in the build directory AFTER vite starts
                 # because vite build clears the outDir.
-                hmr_src = os.path.join(
+                livereload_src = os.path.join(
                     get_current_dir(__file__), "..", "utils",
-                    "react_components", "hmr_client.js"
+                    "react_components", "livereload_client.js"
                 )
-                hmr_dest_dir = os.path.join(self.working_dir, "_kiwijs", "build", "static", "js")
-                hmr_dest = os.path.join(hmr_dest_dir, "hmr_client.js")
+                livereload_dest_dir = os.path.join(self.working_dir, "_kiwijs", "build", "static", "js")
+                livereload_dest = os.path.join(livereload_dest_dir, "livereload_client.js")
                 try:
-                    os.makedirs(hmr_dest_dir, exist_ok=True)
-                    shutil.copy2(hmr_src, hmr_dest)
-                    self._logger.info("Copied HMR client to build directory (Post-build).")
+                    os.makedirs(livereload_dest_dir, exist_ok=True)
+                    shutil.copy2(livereload_src, livereload_dest)
+                    self._logger.info("Copied Live Reload client to build directory (Post-build).")
                 except Exception as e:
-                    self._logger.warning(f"Could not copy HMR client: {e}")
+                    self._logger.warning(f"Could not copy Live Reload client: {e}")
 
             self._logger.info("Vite build completed.")
             return True

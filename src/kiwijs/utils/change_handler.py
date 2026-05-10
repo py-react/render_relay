@@ -106,7 +106,7 @@ class ChangeHandler(FileSystemEventHandler):
 
 
 # ---------------------------------------------------------------------------
-# DevChangeHandler — HMR-aware file watcher for dev mode
+# DevChangeHandler — LiveReload-aware file watcher for dev mode
 # ---------------------------------------------------------------------------
 
 # File extensions that are frontend assets
@@ -119,9 +119,9 @@ _ROUTE_FILES = {"index.jsx", "index.tsx", "layout.jsx", "layout.tsx",
 
 
 class DevChangeHandler(FileSystemEventHandler):
-    """HMR-aware file watcher for dev mode.
+    """LiveReload-aware file watcher for dev mode.
 
-    Consolidates both frontend (HMR) and backend (restart) watching.
+    Consolidates both frontend (LiveReload) and backend (restart) watching.
     This replaces the need for uvicorn's own --reload, preventing 
     conflicting restarts.
 
@@ -163,7 +163,7 @@ class DevChangeHandler(FileSystemEventHandler):
         if change_type is None:
             return
 
-        self._logger.info(f"[HMR] {change_type} — {path}")
+        self._logger.info(f"[LiveReload] {change_type} — {path}")
         self._schedule(change_type)
 
     # ---- helpers -----------------------------------------------------------
@@ -221,13 +221,13 @@ class DevChangeHandler(FileSystemEventHandler):
             elif change_type == "css":
                 self._on_css_change()
         except Exception as e:
-            self._logger.error(f"[HMR] Error handling {change_type} change: {e}")
+            self._logger.error(f"[LiveReload] Error handling {change_type} change: {e}")
 
     # ---- change handlers ---------------------------------------------------
 
     def _on_python_change(self):
         """Python file edited — restart the server."""
-        self._logger.info("[HMR] Python change — restarting server...")
+        self._logger.info("[LiveReload] Python change — restarting server...")
         if self._server_runner:
             self._server_runner()
         else:
@@ -238,7 +238,7 @@ class DevChangeHandler(FileSystemEventHandler):
 
     def _on_css_change(self):
         """CSS file edited — quick rebuild then hot-swap."""
-        self._logger.info("[HMR] CSS change — rebuilding...")
+        self._logger.info("[LiveReload] CSS change — rebuilding...")
         self._quick_rebuild()
         if self._node_runner:
             self._node_runner()
@@ -246,7 +246,7 @@ class DevChangeHandler(FileSystemEventHandler):
 
     def _on_js_change(self):
         """JS/JSX/TSX file edited — quick rebuild then fast-reload."""
-        self._logger.info("[HMR] JS change — rebuilding...")
+        self._logger.info("[LiveReload] JS change — rebuilding...")
         self._quick_rebuild()
         if self._node_runner:
             self._node_runner()
@@ -254,7 +254,7 @@ class DevChangeHandler(FileSystemEventHandler):
 
     def _on_route_structure_change(self):
         """Route files created/deleted — regenerate routes, full rebuild, full reload."""
-        self._logger.info("[HMR] Route structure change — regenerating app.jsx and rebuilding...")
+        self._logger.info("[LiveReload] Route structure change — regenerating app.jsx and rebuilding...")
         self._regenerate_and_rebuild()
         if self._node_runner:
             self._node_runner()
@@ -288,7 +288,7 @@ class DevChangeHandler(FileSystemEventHandler):
         if host == "0.0.0.0":
             host = "127.0.0.1"
         port = self.settings.get("PORT", "8000")
-        url = f"http://{host}:{port}/__hmr_notify"
+        url = f"http://{host}:{port}/__live_reload_notify"
 
         try:
             data = json.dumps(message).encode("utf-8")
@@ -300,4 +300,4 @@ class DevChangeHandler(FileSystemEventHandler):
                 pass
         except Exception as e:
             # Server might be restarting
-            self._logger.debug(f"[HMR] Could not notify server: {e}")
+            self._logger.debug(f"[LiveReload] Could not notify server: {e}")

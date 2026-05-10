@@ -42,7 +42,7 @@ function vitePluginInjectLayout() {
             const fullPath = path.join(directory, file.name);
             if (file.isDirectory()) {
               await findJsFiles(fullPath);
-            } else if (file.name.endsWith('.js') && file.name !== 'hmr_client.js') {
+            } else              if (file.name.endsWith('.js') && file.name !== 'livereload_client.js') {
               const publicPath = fullPath.replace(jsFileDir, '/static/js');
               scriptTags += `<script defer type="module" src="${publicPath}"></script>\n`;
             }
@@ -58,11 +58,11 @@ function vitePluginInjectLayout() {
           await findCssFiles(cssFileDir);
         }
 
-        // In debug mode, inject the HMR client script
-        const isDebug = process.env.DEBUG === "True";
-        if (isDebug) {
-          scriptTags += `<script defer src="/static/js/hmr_client.js"></script>\n`;
-        }
+         // In debug mode, inject the Live Reload client script
+         const isDebug = process.env.DEBUG === "True";
+         if (isDebug) {
+           scriptTags += `<script defer src="/static/js/livereload_client.js"></script>\n`;
+         }
 
         const headTagIndex = layoutContent.lastIndexOf('</head>');
         if (headTagIndex !== -1) {

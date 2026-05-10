@@ -112,16 +112,12 @@ class SSR {
 
   // beta
   async partialRender(props) {
-    return new Promise((resolve, reject) => {
-      // const Component = require(path.resolve("./", "build", "app", "app.js"));
-      const Component = require(_resolve(this.cwd, "_kiwijs", "build", "app", ...props.location.path.split("/"), "index.js"));
-      const StaticRouter = require(_resolve(
-        "./",
-        "_kiwijs",
-        "build",
-        "app",
-        "StaticRouterWrapper.js"
-      ));
+    return new Promise(async (resolve, reject) => {
+      try {
+        const componentPath = _resolve(this.cwd, "_kiwijs", "build", "app", ...props.location.path.split("/"), "index.js");
+        const Component = await import(pathToFileURL(componentPath).href);
+        const staticRouterPath = _resolve(this.cwd, "_kiwijs", "build", "app", "StaticRouterWrapper.js");
+        const StaticRouter = await import(pathToFileURL(staticRouterPath).href);
       const { location } = props;
       const ReactElement = _createElement(Component.default, {
         children: null,
@@ -143,11 +139,14 @@ class SSR {
       loggingWritableStream.on("finish", () => {
         resolve(loggingWritableStream.renderString())
       });
+      } catch (error) {
+        reject(error);
+      }
     })
   }
 
-  createElement(path, props) {
-    const componentFile = require(path);
+  async createElement(path, props) {
+    const componentFile = await import(pathToFileURL(path).href);
     const Component = componentFile.default; // Import the individual component
     const reactElem = _createElement(Component, {
       ...props,

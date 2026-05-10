@@ -383,12 +383,3 @@ You can now call the service method using type-safe functions. For example, to m
 await DefaultService.apiTestGet()
 ```
 By leveraging the type safety features, you get better auto-completion, error handling, and validation during development.
-
-
-## Using this project locally
-
-Clone this repo and run
-
-```bash
-pip install kiwijs
-```

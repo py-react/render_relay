@@ -30,12 +30,12 @@ class App(FastAPI):
         self.extend_app()
         self.add_url()
         self.generate_openapi_schema()
-        # Set up HMR WebSocket in debug mode
+        # Set up Live Reload WebSocket in debug mode
         if self._settings.get("DEBUG", False) or environ.get("DEBUG", "False") == "True":
-            self.setup_hmr()
+            self.setup_livereload()
 
     def generate_openapi_schema(self):
-        if environ.get("RENDER_RELAY_SKIP_OPENAPI_GEN", "False") == "True":
+        if environ.get("KIWIJS_SKIP_OPENAPI_GEN", "False") == "True":
             return
         from kiwijs.utils.build_manager import BuildManager
         bm = BuildManager(app_instance=self)
@@ -81,16 +81,18 @@ class App(FastAPI):
         self.mount(self.static_url_path,app=static_app, name="static")
     
     def setTemplateEngine(self):
-        self.templateEngine = Jinja2Templates(directory = self.template_folder,auto_reload=True,autoescape=False, context_processors=[app_context])
+        self.templateEngine = Jinja2Templates(directory = self.template_folder, context_processors=[app_context])
+        self.templateEngine.env.auto_reload = True
+        self.templateEngine.env.autoescape = False
         self.TemplateResponse = self.templateEngine.TemplateResponse
 
-    def setup_hmr(self):
-        """Set up Hot Module Replacement WebSocket endpoint for dev mode."""
-        from kiwijs.core.hmr import hmr_manager
+    def setup_livereload(self):
+        """Set up Live Reload WebSocket endpoint for dev mode."""
+        from kiwijs.core.livereload import live_reload_manager
 
-        @self.websocket("/__hmr")
-        async def hmr_ws(websocket: WebSocket):
-            await hmr_manager.connect(websocket)
+        @self.websocket("/__live_reload")
+        async def livereload_ws(websocket: WebSocket):
+            await live_reload_manager.connect(websocket)
             try:
                 await websocket.send_json({"type": "connected"})
                 while True:
@@ -99,27 +101,27 @@ class App(FastAPI):
             except WebSocketDisconnect:
                 pass
             finally:
-                await hmr_manager.disconnect(websocket)
+                await live_reload_manager.disconnect(websocket)
 
-        @self.post("/__hmr_notify")
-        async def hmr_notify(request: Request):
+        @self.post("/__live_reload_notify")
+        async def livereload_notify(request: Request):
             """Internal endpoint: DevChangeHandler POSTs here to trigger browser notifications."""
             try:
                 data = await request.json()
-                await hmr_manager.broadcast(data)
-                return JSONResponse({"ok": True, "clients": hmr_manager.client_count})
+                await live_reload_manager.broadcast(data)
+                return JSONResponse({"ok": True, "clients": live_reload_manager.client_count})
             except Exception as e:
                 return JSONResponse({"ok": False, "error": str(e)}, status_code=500)
 
-        # Copy hmr_client.js to the build static output so it can be served
-        hmr_src = path.join(
+        # Copy livereload_client.js to the build static output so it can be served
+        livereload_src = path.join(
             get_current_dir(__file__), "..", "..", "utils",
-            "react_components", "hmr_client.js"
+            "react_components", "livereload_client.js"
         )
-        hmr_dest_dir = path.join(getcwd(), "_kiwijs", "build", "static", "js")
-        hmr_dest = path.join(hmr_dest_dir, "hmr_client.js")
+        livereload_dest_dir = path.join(getcwd(), "_kiwijs", "build", "static", "js")
+        livereload_dest = path.join(livereload_dest_dir, "livereload_client.js")
         try:
-            Path(hmr_dest_dir).mkdir(parents=True, exist_ok=True)
-            shutil.copy2(hmr_src, hmr_dest)
+            Path(livereload_dest_dir).mkdir(parents=True, exist_ok=True)
+            shutil.copy2(livereload_src, livereload_dest)
         except Exception as e:
-            print(f"Warning: Could not copy HMR client: {e}")
+            print(f"Warning: Could not copy Live Reload client: {e}")

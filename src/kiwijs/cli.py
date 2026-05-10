@@ -94,7 +94,7 @@ def runserver(mode):
             for key, value in settings.items():
                 my_env[key] = str(value)
 
-            click.echo("🔥 Starting dev mode with HMR...")
+            click.echo("🔥 Starting dev mode with LiveReload...")
 
             # 1. Initial build (generate __build__ files + vite build)
             click.echo("Building app...")
@@ -239,7 +239,7 @@ def runserver(mode):
 
             try:
                 observer.start()
-                click.echo("✅ Dev server ready — watching for changes (HMR enabled)")
+                click.echo("✅ Dev server ready — watching for changes (LiveReload enabled)")
                 click.echo(f"   Open http://{settings.get('HOST', 'localhost')}:{settings.get('PORT', '8000')}")
 
                 while not manager.should_exit:

@@ -7,10 +7,10 @@ from fastapi import WebSocket, WebSocketDisconnect
 logger = logging.getLogger(__name__)
 
 
-class HMRManager:
-    """Manages WebSocket connections for Hot Module Replacement notifications.
+class LiveReloadManager:
+    """Manages WebSocket connections for Live Reload notifications.
     
-    Browsers connect to the /__hmr WebSocket endpoint. When a file change is
+    Browsers connect to the /__live_reload WebSocket endpoint. When a file change is
     detected, the DevChangeHandler calls broadcast() to notify all connected
     browsers about the change type (css_update, js_update, full_reload).
     """
@@ -23,15 +23,15 @@ class HMRManager:
         await websocket.accept()
         async with self._lock:
             self._clients.add(websocket)
-        logger.debug(f"HMR client connected. Total: {len(self._clients)}")
+        logger.debug(f"Live Reload client connected. Total: {len(self._clients)}")
 
     async def disconnect(self, websocket: WebSocket):
         async with self._lock:
             self._clients.discard(websocket)
-        logger.debug(f"HMR client disconnected. Total: {len(self._clients)}")
+        logger.debug(f"Live Reload client disconnected. Total: {len(self._clients)}")
 
     async def broadcast(self, message: dict):
-        """Send a message to all connected HMR clients."""
+        """Send a message to all connected Live Reload clients."""
         payload = json.dumps(message)
         async with self._lock:
             clients = list(self._clients)
@@ -42,7 +42,7 @@ class HMRManager:
                 await client.send_text(payload)
             except Exception:
                 disconnected.append(client)
-
+        
         if disconnected:
             async with self._lock:
                 for client in disconnected:
@@ -68,4 +68,4 @@ class HMRManager:
 
 
 # Singleton instance shared between the FastAPI app and the file watcher
-hmr_manager = HMRManager()
+live_reload_manager = LiveReloadManager()

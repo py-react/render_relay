@@ -1,18 +1,22 @@
 import socket
 import struct
 import json
+import time
+import os
 from kiwijs.utils import load_settings
 from kiwijs.utils.constant import get_sock_path
 from kiwijs.utils.get_logger import get_logger
 
 
 class BridgeOperation:
-    def __init__(self,debug: bool = False):
+    def __init__(self, debug: bool = False, max_retries: int = 5, retry_delay: float = 0.1):
         self._logger = get_logger("BridgeOperation")
         self.settings = load_settings()
         app_name = self.settings.get("NAME", "kiwijs")
         self.bridge_path: str = self.settings.get("CUSTOM_BRDIGE_PATH", get_sock_path(app_name))
         self.debug = debug
+        self.max_retries = max_retries
+        self.retry_delay = retry_delay
         self.test_connection()
 
     def get_client(self):
@@ -21,10 +25,35 @@ class BridgeOperation:
             client = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
             return client
         except Exception as e:
-            self._logger.error(f"Connetion Failed: {str(e)} ",)
+            self._logger.error(f"Connetion Failed: {str(e)}",)
             raise Exception(str(e))
 
+    def _wait_for_socket(self) -> bool:
+        """Wait for the socket file to exist and be ready."""
+        for attempt in range(self.max_retries):
+            if os.path.exists(self.bridge_path):
+                try:
+                    client = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+                    client.settimeout(0.5)
+                    client.connect(self.bridge_path)
+                    client.close()
+                    self._logger.debug(f"Socket ready after {attempt + 1} attempts")
+                    return True
+                except (ConnectionRefusedError, OSError) as e:
+                    self._logger.debug(f"Socket exists but not ready: {e}")
+            else:
+                self._logger.debug(f"Socket file not found (attempt {attempt + 1}/{self.max_retries})")
+            
+            if attempt < self.max_retries - 1:
+                time.sleep(self.retry_delay * (2 ** attempt))  # Exponential backoff
+        
+        return False
+
     def test_connection(self):
+        # First wait for socket to be ready
+        if not self._wait_for_socket():
+            raise Exception(f"Socket not ready after {self.max_retries} attempts: {self.bridge_path}")
+        
         try:
             client = self.get_client()
             self._logger.debug(f"Calling connect {self.bridge_path}")
@@ -39,7 +68,7 @@ class BridgeOperation:
                 self._logger.error(f"Health check failed: {str(e)}")
                 raise Exception(f"Health check failed: {str(e)}")
         except Exception as e:
-            self._logger.error(f"Connetion Failed: {str(e)} ",)
+            self._logger.error(f"Connetion Failed: {str(e)}",)
             raise Exception(f"Connetion Failed: {str(e)} ")
 
     def send_all(self, data, client:socket.socket):
@@ -59,6 +88,10 @@ class BridgeOperation:
             raise Exception(f"Unexpected error during sending data: {e}")
 
     def send_and_receive(self, message)->str:
+        # Wait for socket before attempting to send
+        if not self._wait_for_socket():
+            raise Exception(f"Socket not ready: {self.bridge_path}")
+        
         try:
             received_data = b''
             with socket.socket(socket.AF_UNIX, socket.SOCK_STREAM) as client:
