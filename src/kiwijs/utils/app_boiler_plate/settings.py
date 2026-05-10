@@ -1,4 +1,4 @@
-NAME="GingerJs"
+NAME="KiwiJs"
 VERSION="1.0"
 PACKAGE_MANAGER="npm"
 DEBUG=True

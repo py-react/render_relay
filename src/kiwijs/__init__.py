@@ -6,5 +6,5 @@ from kiwijs.core.ssr import SSROperation
 from kiwijs.core.app import App
 from fastapi import Request
 
-__version__ = "0.1.0"
+__version__ = "0.0.2"
 __all__ = ["BridgeOperation","SSROperation", "Request", "App"]

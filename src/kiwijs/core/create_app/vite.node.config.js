@@ -29,31 +29,31 @@ async function buildConfig() {
 
   // Determine entry points
   const entry = [
-    path.resolve(process.cwd(), "_gingerjs", "__build__", "main.jsx"),
+    path.resolve(process.cwd(), "_kiwijs", "__build__", "main.jsx"),
     path.resolve(
       process.cwd(),
-      "_gingerjs",
+      "_kiwijs",
       "__build__",
       "StaticRouterWrapper.jsx"
     ),
-    path.resolve(process.cwd(), "_gingerjs", "__build__", "DefaultLoader.jsx"),
+    path.resolve(process.cwd(), "_kiwijs", "__build__", "DefaultLoader.jsx"),
     ...(process.env.DEBUG === "True"
-      ? [path.resolve(process.cwd(), "_gingerjs", "__build__", "Error.jsx")]
+      ? [path.resolve(process.cwd(), "_kiwijs", "__build__", "Error.jsx")]
       : []),
 
     path.resolve(
       process.cwd(),
-      "_gingerjs",
+      "_kiwijs",
       "__build__",
       "GenericNotFound.jsx"
     ),
     path.resolve(
       process.cwd(),
-      "_gingerjs",
+      "_kiwijs",
       "__build__",
       "LayoutPropsProvider.jsx"
     ),
-    path.resolve(process.cwd(), "_gingerjs", "__build__", "PropsProvider.jsx"),
+    path.resolve(process.cwd(), "_kiwijs", "__build__", "PropsProvider.jsx"),
   ];
 
   // Define plugins
@@ -87,15 +87,15 @@ async function buildConfig() {
     mode: MODE,
     build: {
       // emptyOutDir:false,
-      outDir: path.resolve(process.cwd(), "_gingerjs", "build"),
-      copyPublicDir: false, 
+      outDir: path.resolve(process.cwd(), "_kiwijs", "build"),
+      copyPublicDir: false,
       ssr: true,
       rollupOptions: {
         input: entry,
         // external:[/node_modules/],
-        preserveEntrySignatures:true,
+        preserveEntrySignatures: true,
         output: {
-          preserveModulesRoot:"src",
+          preserveModulesRoot: "src",
           preserveModules: true,
           entryFileNames:
             MODE === "development" ? "[name].js" : "[name].[hash].js",

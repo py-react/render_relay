@@ -41,7 +41,7 @@ def create_react_app(debug_override=None):
                 if filename != "layout.html" and filename!="index.html" and filename!="static_site.html":
                     # Construct the source and destination paths
                     source_path = os.path.join(get_base(), 'public', 'templates', filename)
-                    destination_path = os.path.join(get_base(),"_gingerjs", 'build', 'templates', filename)
+                    destination_path = os.path.join(get_base(),"_kiwijs", 'build', 'templates', filename)
 
                     # Create the destination directory if it does not exist
                     os.makedirs(os.path.dirname(destination_path), exist_ok=True)
@@ -55,6 +55,6 @@ def create_react_app(debug_override=None):
     
     if not debug:
         # Use built-in Python functions instead of subprocess
-        __build_path = os.path.join(cwd, "_gingerjs", "__build__")
+        __build_path = os.path.join(cwd, "_kiwijs", "__build__")
         if os.path.exists(__build_path):
             shutil.rmtree(__build_path)

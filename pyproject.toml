@@ -4,75 +4,104 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "kiwijs"
-version = "0.0.1"
-description = "Passing the baton of rendered HTML from server to client"
+version = "0.0.2"
+description = "Full-stack web framework for building React apps with Python. Features filesystem-based routing, SSR, client/server components, and FastAPI integration."
 readme = "readme.md"
 authors = [
     {name = "py-react", email = "yksandeep08+reactpy@gmail.com"}
 ]
+keywords = [
+    "react",
+    "fullstack",
+    "framework",
+    "ssr",
+    "server-side-rendering",
+    "fastapi",
+    "web",
+    "frontend",
+    "backend",
+    "python",
+    "javascript",
+    "meta-framework",
+    "router",
+    "components"
+]
 classifiers = [
+    "Intended Audience :: Developers",
     "License :: OSI Approved :: MIT License",
     "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Internet :: WWW/HTTP :: Dynamic Content",
+    "Topic :: Software Development :: Libraries :: Application Frameworks",
+    "Framework :: FastAPI",
 ]
-requires-python = ">=3.11.0"
+requires-python = ">=3.11"
 dependencies = [
-    "annotated-types==0.7.0",
-    "anyio==4.9.0",
-    "blessed==1.21.0",
-    "certifi==2025.7.9",
-    "click==8.2.1",
-    "dnspython==2.7.0",
-    "docker>=7.1.0",
-    "editor==1.6.6",
-    "email_validator==2.2.0",
-    "fastapi==0.116.1",
-    "fastapi-cli==0.0.8",
-    "fastapi-cloud-cli==0.1.4",
-    "h11==0.16.0",
-    "httpcore==1.0.9",
-    "httptools==0.6.4",
-    "httpx==0.28.1",
-    "idna==3.10",
-    "inquirer==3.4.0",
-    "Jinja2==3.1.6",
-    "kubernetes>=35.0.0",
-    "markdown-it-py==3.0.0",
-    "MarkupSafe==3.0.2",
-    "mdurl==0.1.2",
-    "psutil==7.0.0",
-    "pydantic==2.11.7",
-    "pydantic_core==2.33.2",
-    "Pygments==2.19.2",
-    "python-dotenv==1.1.1",
-    "python-multipart==0.0.20",
-    "PyYAML==6.0.2",
-    "readchar==4.2.1",
-    "rich==14.0.0",
-    "rich-toolkit==0.14.8",
-    "rignore==0.5.1",
-    "runs==1.2.2",
-    "sentry-sdk==2.32.0",
-    "shellingham==1.5.4",
-    "sniffio==1.3.1",
-    "starlette==0.47.1",
-    "typer==0.16.0",
-    "typing-inspection==0.4.1",
-    "typing_extensions==4.14.1",
-    "urllib3==2.5.0",
-    "uvicorn==0.35.0",
-    "uvloop==0.21.0",
-    "watchdog==6.0.0",
-    "watchfiles==1.1.0",
-    "wcwidth==0.2.13",
-    "websockets==15.0.1",
-    "xmod==1.8.1",
+    "annotated-types>=0.7.0",
+    "anyio>=4.0.0",
+    "blessed>=1.21.0",
+    "certifi>=2024.0.0",
+    "click>=8.1.0",
+    "dnspython>=2.4.0",
+    "docker>=7.0.0",
+    "editor>=1.6.0",
+    "email_validator>=2.0.0",
+    "fastapi>=0.115.0",
+    "fastapi-cli>=0.0.6",
+    "fastapi-cloud-cli>=0.1.0",
+    "h11>=0.14.0",
+    "httpcore>=1.0.0",
+    "httptools>=0.6.0",
+    "httpx>=0.27.0",
+    "idna>=3.0",
+    "inquirer>=3.2.0",
+    "Jinja2>=3.1.0",
+    "kubernetes>=30.0.0",
+    "markdown-it-py>=3.0.0",
+    "MarkupSafe>=3.0.0",
+    "mdurl>=0.1.0",
+    "psutil>=5.9.0",
+    "pydantic>=2.0.0",
+    "pydantic_core>=2.0.0",
+    "Pygments>=2.17.0",
+    "python-dotenv>=1.0.0",
+    "python-multipart>=0.0.9",
+    "PyYAML>=6.0.0",
+    "readchar>=4.0.0",
+    "rich>=14.0.0",
+    "rich-toolkit>=0.9.0",
+    "rignore>=0.5.0",
+    "runs>=1.2.0",
+    "sentry-sdk>=2.0.0",
+    "shellingham>=1.5.0",
+    "sniffio>=1.3.0",
+    "starlette>=0.40.0",
+    "typer>=0.12.0",
+    "typing-inspection>=0.4.0",
+    "typing_extensions>=4.0.0",
+    "urllib3>=2.0.0",
+    "uvicorn>=0.30.0",
+    "uvloop>=0.19.0",
+    "watchdog>=4.0.0",
+    "watchfiles>=0.23.0",
+    "wcwidth>=0.2.0",
+    "websockets>=13.0.0",
+    "xmod>=1.8.0",
 ]
 
 [project.urls]
-Homepage = "https://github.com/py-react/render-relay"
+Homepage = "https://github.com/py-react/kiwijs"
+Repository = "https://github.com/py-react/kiwijs"
+Documentation = "https://github.com/py-react/kiwijs#readme"
+"Bug Tracker" = "https://github.com/py-react/kiwijs/issues"
 
 [project.scripts]
 kiwijs = "kiwijs.cli:cli"
 
 [tool.setuptools]
+package-dir = {"" = "src"}
+packages = {find = {where = ["src"]}}
 include-package-data = true

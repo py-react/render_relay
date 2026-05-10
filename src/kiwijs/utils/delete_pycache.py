@@ -49,5 +49,5 @@ if __name__ == "__main__":
 
     target_path = sys.argv[1]
     # Define the list of directories to exclude here
-    exclude_dirs = ['env', 'venv', 'node_modules',"_gingerjs","site-packages"]  # Add your directories to exclude here
+    exclude_dirs = ['env', 'venv', 'node_modules',"_kiwijs","site-packages"]  # Add your directories to exclude here
     delete_pycache(target_path, exclude_dirs)

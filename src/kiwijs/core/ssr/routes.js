@@ -53,17 +53,17 @@ class SSR {
     this.debug = debug;
   }
   async render(props) {
-    return new Promise(async(resolve, reject) => {
+    return new Promise(async (resolve, reject) => {
       try {
         const cacheBuster = this.debug ? `?v=${Date.now()}` : '';
         const getImportPath = (p) => {
-            const absPath = _resolve(p);
-            return pathToFileURL(absPath).href + cacheBuster;
+          const absPath = _resolve(p);
+          return pathToFileURL(absPath).href + cacheBuster;
         };
 
-        const App = await import(getImportPath("./_gingerjs/build/_gingerjs/__build__/app.js"));
-        const StaticRouter = await import(getImportPath("./_gingerjs/build/_gingerjs/__build__/StaticRouterWrapper.js"));
-        const {getAppContext} = await import(getImportPath("./_gingerjs/build/app/layout.js"));
+        const App = await import(getImportPath("./_kiwijs/build/_kiwijs/__build__/app.js"));
+        const StaticRouter = await import(getImportPath("./_kiwijs/build/_kiwijs/__build__/StaticRouterWrapper.js"));
+        const { getAppContext } = await import(getImportPath("./_kiwijs/build/app/layout.js"));
         const { location } = props;
         const ReactElement = _createElement(App.default, {
           children: null,
@@ -75,19 +75,19 @@ class SSR {
           url: props.location.path,
         });
         const providedCtx = {
-          app:StaticRouterWrapper,
-          renderApp:()=>({
-            enhanceApp:(App)=>App,
-            getStyles:(App)=>App,
-            styles:()=>"",
-            finally:()=>{}
+          app: StaticRouterWrapper,
+          renderApp: () => ({
+            enhanceApp: (App) => App,
+            getStyles: (App) => App,
+            styles: () => "",
+            finally: () => { }
           })
         }
-        const renderApp = (render)=>{
+        const renderApp = (render) => {
           const rendered = render.renderApp();
           const componentHTML =
             renderToPipeableStream(rendered.getStyles(StaticRouterWrapper));
-          
+
           // Create an instance of the logging writable stream
           const loggingWritableStream = new LoggingWritableStream();
           const loggingTransformStream = new LoggingTransformStream();
@@ -98,30 +98,26 @@ class SSR {
             rendered.finally()
           });
         }
-        if(typeof getAppContext === "function"){
+        if (typeof getAppContext === "function") {
           Object.assign(providedCtx, await getAppContext(providedCtx));
         }
         renderApp(providedCtx)
 
       } catch (error) {
-        console.log(error,"error")
+        console.log(error, "error")
         reject(error);
       }
     })
   }
-  
- // beta
-  async partialRender(props){
-    return new Promise((resolve, reject) => {
-      // const Component = require(path.resolve("./", "build", "app", "app.js"));
-      const Component = require(_resolve(this.cwd,"_gingerjs","build","app",...props.location.path.split("/"),"index.js"));
-      const StaticRouter = require(_resolve(
-        "./",
-        "_gingerjs",
-        "build",
-        "app",
-        "StaticRouterWrapper.js"
-      ));
+
+  // beta
+  async partialRender(props) {
+    return new Promise(async (resolve, reject) => {
+      try {
+        const componentPath = _resolve(this.cwd, "_kiwijs", "build", "app", ...props.location.path.split("/"), "index.js");
+        const Component = await import(pathToFileURL(componentPath).href);
+        const staticRouterPath = _resolve(this.cwd, "_kiwijs", "build", "app", "StaticRouterWrapper.js");
+        const StaticRouter = await import(pathToFileURL(staticRouterPath).href);
       const { location } = props;
       const ReactElement = _createElement(Component.default, {
         children: null,
@@ -133,8 +129,8 @@ class SSR {
         url: props.location.path,
       });
       const componentHTML =
-          renderToPipeableStream(ReactElement);
-      
+        renderToPipeableStream(ReactElement);
+
       // Create an instance of the logging writable stream
       const loggingWritableStream = new LoggingWritableStream();
       const loggingTransformStream = new LoggingTransformStream();
@@ -143,11 +139,14 @@ class SSR {
       loggingWritableStream.on("finish", () => {
         resolve(loggingWritableStream.renderString())
       });
+      } catch (error) {
+        reject(error);
+      }
     })
   }
 
-  createElement(path, props) {
-    const componentFile = require(path);
+  async createElement(path, props) {
+    const componentFile = await import(pathToFileURL(path).href);
     const Component = componentFile.default; // Import the individual component
     const reactElem = _createElement(Component, {
       ...props,

@@ -12,7 +12,7 @@ import logging
 from watchdog.observers import Observer
 
 from kiwijs.utils.user_input import main
-from kiwijs.utils.constant import DEFAULT_LOCKFILE,DEFAULT_SOCK_PATH
+from kiwijs.utils.constant import get_sock_path, get_lockfile
 logger = logging.getLogger(__name__)
 observer = Observer()
 
@@ -50,7 +50,7 @@ def create_app():
             'STATIC_SITE') else {}, {".jsx": ".tsx", ".js": ".ts"} if config['create_app_settings']['use_typescript'] else {})
         create_dir(os.path.join(cwd, "public", "static"))
         copy_file_if_not_exists(os.path.join(get_current_dir(__file__), "utils", "app_boiler_plate", "public", "static",
-                                "gingerjs_logo.png"), os.path.join(cwd, "public", "static", "gingerjs_logo.png"))
+                                "kiwijs_logo.png"), os.path.join(cwd, "public", "static", "kiwijs_logo.png"))
         create_dir(os.path.join(cwd, "src", "components"))
         click.echo("App set up completed")
     else:
@@ -84,6 +84,9 @@ def runserver(mode):
     try:
         my_env = os.environ.copy()  # Copy the current environment
         settings = load_settings()
+        app_name = settings.get("NAME", "kiwijs")
+        SOCK_PATH = get_sock_path(app_name)
+        LOCKFILE = get_lockfile(app_name)
 
         if mode == "dev":
             settings["DEBUG"] = True
@@ -91,7 +94,7 @@ def runserver(mode):
             for key, value in settings.items():
                 my_env[key] = str(value)
 
-            click.echo("🔥 Starting dev mode with HMR...")
+            click.echo("🔥 Starting dev mode with LiveReload...")
 
             # 1. Initial build (generate __build__ files + vite build)
             click.echo("Building app...")
@@ -104,11 +107,13 @@ def runserver(mode):
             import threading
 
             class DevProcessManager:
-                def __init__(self, uvicorn_cmd, node_cmd_args, env, cwd):
+                def __init__(self, uvicorn_cmd, node_cmd_args, env, cwd, sock_path, lockfile):
                     self.uvicorn_cmd = uvicorn_cmd
                     self.node_cmd_args = node_cmd_args
                     self.env = env
                     self.cwd = cwd
+                    self.sock_path = sock_path
+                    self.lockfile = lockfile
                     self.uvicorn_process = None
                     self.node_process = None
                     self.is_restarting_uvicorn = False
@@ -126,18 +131,18 @@ def runserver(mode):
                             except Exception:
                                 self.node_process.kill()
                         
-                        socket_path = DEFAULT_SOCK_PATH
-                        LOCKFILE = DEFAULT_LOCKFILE
+                        socket_path = self.sock_path
+                        lockfile = self.lockfile
                         try:
                             if os.path.exists(socket_path): os.remove(socket_path)
-                            if os.path.exists(LOCKFILE): os.remove(LOCKFILE)
+                            if os.path.exists(lockfile): os.remove(lockfile)
                         except Exception: pass
 
                         self.node_process = subprocess.Popen(
                             ['node'] + self.node_cmd_args,
                             cwd=self.cwd
                         )
-                        with open(LOCKFILE, "w") as f:
+                        with open(lockfile, "w") as f:
                             f.write(str(self.node_process.pid))
                         self.is_restarting_node = False
                         return self.node_process
@@ -207,14 +212,14 @@ def runserver(mode):
                                 except Exception: pass
 
             node_process_path = os.path.join(get_current_dir(__file__), "core", "bridge", "unix_sock.js")
-            node_args = [node_process_path, f"debug=True", f'cwd={os.getcwd()}', f"sock_path={DEFAULT_SOCK_PATH}"]
+            node_args = [node_process_path, f"debug=True", f'cwd={os.getcwd()}', f"sock_path={SOCK_PATH}"]
             uvicorn_cmd = [
-                "uvicorn", "_gingerjs.main:app",
+                "uvicorn", "_kiwijs.main:app",
                 "--port", settings.get("PORT", "8000"),
                 "--host", settings.get("HOST", "0.0.0.0"),
             ]
 
-            manager = DevProcessManager(uvicorn_cmd, node_args, my_env, get_base())
+            manager = DevProcessManager(uvicorn_cmd, node_args, my_env, get_base(), SOCK_PATH, LOCKFILE)
             manager.start_node()
             click.echo(f"Node bridge started (PID {manager.node_process.pid})")
             manager.start_uvicorn()
@@ -234,7 +239,7 @@ def runserver(mode):
 
             try:
                 observer.start()
-                click.echo("✅ Dev server ready — watching for changes (HMR enabled)")
+                click.echo("✅ Dev server ready — watching for changes (LiveReload enabled)")
                 click.echo(f"   Open http://{settings.get('HOST', 'localhost')}:{settings.get('PORT', '8000')}")
 
                 while not manager.should_exit:
@@ -248,7 +253,7 @@ def runserver(mode):
                 observer.join()
                 manager.stop_all()
                 # Clean up lock/socket files
-                for f in [DEFAULT_LOCKFILE, DEFAULT_SOCK_PATH]:
+                for f in [LOCKFILE, SOCK_PATH]:
                     try: os.remove(f)
                     except Exception: pass
                 click.echo("Dev server stopped.")
@@ -256,11 +261,10 @@ def runserver(mode):
 
         
         settings["DEBUG"] = False
-        # Define the socket path
-        socket_path = DEFAULT_SOCK_PATH
+        # Define the socket path (per-app, derived from settings NAME)
+        socket_path = SOCK_PATH
         # Start the Node.js server as a subprocess
         node_process_path = os.path.join(get_current_dir(__file__),"core", "bridge", "unix_sock.js")
-        LOCKFILE = DEFAULT_LOCKFILE
         try:
             os.remove(LOCKFILE)
             os.remove(socket_path)
@@ -280,7 +284,7 @@ def runserver(mode):
             # Proposed: Run a minimal bootstrap to generate schema -> client -> build.
             bm.pre_flight(debug=settings.get("DEBUG", False))
             
-            subprocess.run([f"uvicorn","_gingerjs.main:app","--port",settings.get("PORT"),"--host",settings.get("HOST"),"--workers",settings.get("UVICORN_WORKERS","1")], check=True, cwd=get_base(),env=my_env)
+            subprocess.run([f"uvicorn","_kiwijs.main:app","--port",settings.get("PORT"),"--host",settings.get("HOST"),"--workers",settings.get("UVICORN_WORKERS","1")], check=True, cwd=get_base(),env=my_env)
         except  Exception as e:
             raise e
 
